@@ -1,0 +1,350 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-card: var(--bg-card);
+  --color-bg-card-elevated: var(--bg-card-elevated);
+  --color-bg-card-hover: var(--bg-card-hover);
+  --color-border-custom: var(--border);
+  --color-divider-custom: var(--divider);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  
+  /* Map standard theme classes to new accent branding colors */
+  --color-accent-blue: var(--accent-primary);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-green: var(--bullish-green);
+  --color-accent-red: var(--bearish-red);
+  --color-accent-yellow: var(--warning);
+  --color-chart-grid: var(--chart-grid);
+  
+  /* Palette V2 Custom variables */
+  --color-accent-sky: var(--accent-secondary);
+  --color-accent-sky-hover: var(--accent-secondary-hover);
+  --color-accent-sky-soft: var(--accent-secondary-soft);
+  --color-premium-gold: var(--premium-highlight);
+  --color-premium-gold-soft: var(--premium-highlight-soft);
+  
+  /* Specific Chart theme classes */
+  --color-chart-bullish: var(--chart-bullish);
+  --color-chart-bearish: var(--chart-bearish);
+  --color-chart-forecast: var(--chart-forecast);
+  --color-chart-confidence: var(--chart-confidence);
+  --color-chart-support: var(--chart-support);
+  --color-chart-resistance: var(--chart-resistance);
+  
+  /* Table row hover */
+  --color-table-row-hover: var(--table-row-hover);
+  
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+}
+
+/* Default Theme (Dark Mode - Predictive Obsidian) */
+:root {
+  --bg-primary: #09090B;
+  --bg-secondary: #27272A; /* Input/Secondary Surface */
+  --bg-card: #18181B; /* Surface/Card Background */
+  --bg-card-elevated: #18181B;
+  --bg-card-hover: #27272A;
+  --border: #27272A; /* Inactive borders & subtle dividers */
+  --divider: #27272A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA; /* Light Silver */
+  --text-muted: #52525B; /* Muted Gray */
+  --accent-primary: #10B981; /* Luminous Mint Green */
+  --accent-hover: #059669;
+  --accent-soft: rgba(16, 185, 129, 0.08);
+  --accent-secondary: #F43F5E; /* Soft Coral Red */
+  --accent-secondary-hover: #E11D48;
+  --accent-secondary-soft: rgba(244, 63, 94, 0.08);
+  --warning: #A1A1AA; /* Neutral warning/watchlist */
+  
+  --premium-highlight: #10B981;
+  --premium-highlight-soft: rgba(16, 185, 129, 0.08);
+  
+  --chart-bullish: #10B981;
+  --chart-bearish: #F43F5E;
+  --chart-support: var(--accent-primary);
+  --chart-resistance: var(--accent-secondary);
+  --chart-forecast: var(--accent-soft);
+  --chart-confidence: rgba(16, 185, 129, 0.04);
+  --table-row-hover: #27272A;
+  
+  --chart-grid: rgba(255, 255, 255, 0.02);
+  --shadow-custom: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  color-scheme: dark;
+}
+
+/* Light Theme Override (Predictive Frost Light Mode) */
+html[data-theme="light"],
+:root[data-theme="light"] {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #E4E4E7; /* Input/Secondary Surface */
+  --bg-card: #F4F4F5; /* Surface/Card Background */
+  --bg-card-elevated: #F4F4F5;
+  --bg-card-hover: #E4E4E7;
+  --border: #D4D4D8; /* Subtle dividers */
+  --divider: #D4D4D8;
+  --text-primary: #09090B;
+  --text-secondary: #52525B; /* Medium Gray */
+  --text-muted: #A1A1AA; /* Muted Light Gray */
+  --accent-primary: #059669; /* Emerald Green */
+  --accent-hover: #047857;
+  --accent-soft: rgba(5, 150, 105, 0.08);
+  --accent-secondary: #E11D48; /* Vivid Crimson */
+  --accent-secondary-hover: #BE123C;
+  --accent-secondary-soft: rgba(225, 29, 72, 0.08);
+  --warning: #52525B; /* Neutral warning/watchlist */
+  
+  --premium-highlight: #059669;
+  --premium-highlight-soft: rgba(5, 150, 105, 0.08);
+  
+  --chart-bullish: #059669;
+  --chart-bearish: #E11D48;
+  --chart-support: var(--accent-primary);
+  --chart-resistance: var(--accent-secondary);
+  --chart-forecast: var(--accent-soft);
+  --chart-confidence: rgba(5, 150, 105, 0.04);
+  --table-row-hover: #E4E4E7;
+
+  --chart-grid: rgba(9, 9, 11, 0.05);
+  --shadow-custom: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+
+  color-scheme: light;
+}
+
+/* Explicit Dark Theme Override (Consistent Obsidian tokens) */
+html[data-theme="dark"],
+:root[data-theme="dark"] {
+  --bg-primary: #09090B;
+  --bg-secondary: #27272A;
+  --bg-card: #18181B;
+  --bg-card-elevated: #18181B;
+  --bg-card-hover: #27272A;
+  --border: #27272A;
+  --divider: #27272A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --text-muted: #52525B;
+  --accent-primary: #10B981;
+  --accent-hover: #059669;
+  --accent-soft: rgba(16, 185, 129, 0.08);
+  --accent-secondary: #F43F5E;
+  --accent-secondary-hover: #E11D48;
+  --accent-secondary-soft: rgba(244, 63, 94, 0.08);
+  --warning: #A1A1AA;
+  
+  --premium-highlight: #10B981;
+  --premium-highlight-soft: rgba(16, 185, 129, 0.08);
+  
+  --chart-bullish: #10B981;
+  --chart-bearish: #F43F5E;
+  --chart-support: var(--accent-primary);
+  --chart-resistance: var(--accent-secondary);
+  --chart-forecast: var(--accent-soft);
+  --chart-confidence: rgba(16, 185, 129, 0.04);
+  --table-row-hover: #27272A;
+
+  --chart-grid: rgba(255, 255, 255, 0.02);
+  --shadow-custom: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 100vh;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar Styles */
+:root {
+  --color-scrollbar-track: light-dark(#faf6ee, #171a1d);
+  --color-scrollbar-thumb: light-dark(#eae2d5, #262d32);
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+}
+
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+  }
+}
+
+/* Premium Animations System */
+@keyframes premium-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-reveal {
+  opacity: 0;
+  animation: premium-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-1 { animation-delay: 25ms; }
+.stagger-2 { animation-delay: 50ms; }
+.stagger-3 { animation-delay: 75ms; }
+.stagger-4 { animation-delay: 100ms; }
+.stagger-5 { animation-delay: 125ms; }
+
+/* Global Design Overrides */
+
+/* 1. Force Border Radius to be 18px across all component elements */
+.rounded-xl, .rounded-2xl, .rounded-3xl {
+  border-radius: 18px !important;
+}
+
+/* 2. Global Primary Button Layouts (Premium Accent - Teal) */
+.bg-accent-blue {
+  background-color: var(--accent-primary) !important;
+  color: #FFFFFF !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none !important;
+}
+
+:root {
+  --shadow-btn-hover: 0 4px 12px rgba(79, 175, 154, 0.12), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+html[data-theme="dark"],
+:root[data-theme="dark"] {
+  --shadow-btn-hover: 0 4px 12px rgba(105, 197, 177, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bg-accent-blue:hover {
+  background-color: var(--accent-hover) !important;
+  box-shadow: var(--shadow-btn-hover) !important;
+}
+
+/* 3. Global Secondary Button Layouts (white/surface background, border - Sky Blue Highlight on hover) */
+.border-border-custom.bg-bg-card, 
+.border-border-custom.bg-bg-secondary {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.border-border-custom.bg-bg-card:hover, 
+.border-border-custom.bg-bg-secondary:hover {
+  border-color: var(--accent-secondary) !important;
+  color: var(--accent-secondary) !important;
+  background-color: var(--bg-card-hover) !important;
+}
+
+/* Premium Button / Link Scale System */
+button, 
+.btn-premium,
+a.bg-accent-blue,
+button.bg-accent-blue {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+button:hover:not(:disabled),
+.btn-premium:hover {
+  transform: scale(1.015);
+}
+
+/* Interactive Card Hover System */
+a.block.bg-bg-card,
+a.bg-bg-card,
+div.bg-bg-card[onclick],
+.interactive-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+a.block.bg-bg-card:hover,
+a.bg-bg-card:hover,
+.interactive-card:hover {
+  transform: translateY(-1px) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.02), 0 4px 10px -5px rgba(0, 0, 0, 0.01) !important;
+  background-color: var(--bg-card-hover) !important;
+}
+
+[data-theme="dark"] a.block.bg-bg-card:hover,
+[data-theme="dark"] a.bg-bg-card:hover,
+[data-theme="dark"] .interactive-card:hover {
+  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.15), 0 4px 10px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Navigation Link Underline Animation */
+.nav-link-premium {
+  position: relative;
+  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link-premium::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background-color: var(--accent-primary);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link-premium:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* 4. Very subtle shadows */
+.shadow-sm, .shadow-md, .shadow-lg {
+  box-shadow: var(--shadow-custom) !important;
+}
+
+/* 5. Clean dividers */
+.border-b.border-border-custom, 
+.border-y.border-border-custom, 
+.border-t.border-border-custom, 
+.border-r.border-border-custom, 
+.border-l.border-border-custom {
+  border-color: var(--divider) !important;
+}
+
+/* 6. Utility transitions */
+.transition-all-custom {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
