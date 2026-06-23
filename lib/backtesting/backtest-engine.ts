@@ -19,6 +19,7 @@ import { getStockSector } from './stock-universe';
 import { computeTickerStats } from './accuracy-analytics';
 import { STRESS_SCENARIOS } from './stress-scenarios';
 import { generateWalkForwardWindows, aggregateWalkForwardResults, filterRecordsByWindow, computeWindowStats } from './walk-forward';
+import { validateMarketData } from '../data-quality';
 import { generatePrediction } from '../prediction-engine';
 
 // ─── Timeframe → Date Range ───────────────────────────────────────────────────
@@ -163,6 +164,13 @@ async function runTickerBacktest(
     const futureBar = bars[i + horizonDays];
     const futurePrice = futureBar.adjClose ?? futureBar.close;
     const actualReturn = ((futurePrice - price) / price) * 100;
+
+    // Data Quality Check
+    const historySlice = bars.slice(0, i + 1) as any;
+    const dataQuality = validateMarketData(historySlice, price);
+    if (!dataQuality.isReliable) {
+      continue; // Skip backtest for this day due to poor data quality
+    }
 
     for (const model of models) {
       try {

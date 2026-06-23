@@ -247,10 +247,18 @@ export default function StockAnalysisPage() {
             />
 
             {/* Historical Charts Container */}
-            <div className="p-5 border border-border-custom bg-bg-card rounded-xl transition-theme space-y-4 shadow-sm">
-              <div>
-                <h3 className="text-sm font-bold text-text-primary">Historical Chart Patterns</h3>
-                <p className="text-xs text-text-secondary">OHLC price wicks and daily transaction volumes</p>
+            <div className="p-5 border border-border-custom bg-bg-card rounded-xl transition-theme space-y-4 shadow-sm relative overflow-hidden">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-sm font-bold text-text-primary">Historical Chart Patterns</h3>
+                  <p className="text-xs text-text-secondary">OHLC price wicks and daily transaction volumes</p>
+                </div>
+                {stockData.dataQuality && !stockData.dataQuality.isReliable && (
+                  <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    Unreliable Data
+                  </div>
+                )}
               </div>
               <CandlestickChart data={stockData.history} />
               <VolumeChart data={stockData.history} />

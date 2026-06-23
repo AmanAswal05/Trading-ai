@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { calculateIndicators } from '@/lib/indicators';
+import { validateMarketData } from '@/lib/data-quality';
 import { StockData, HistoricalQuote, StockQuote } from '@/types/stock';
 
 export function generateMockStockData(ticker: string): StockData {
@@ -64,6 +65,9 @@ export function generateMockStockData(ticker: string): StockData {
     previousClose: Number(previousClose.toFixed(2)),
   };
 
+  const indicators = calculateIndicators(compactHistory);
+  const dataQuality = validateMarketData(compactHistory, lastQuote.close);
+
   return {
     ticker: cleanTicker,
     name: info.name,
@@ -71,7 +75,8 @@ export function generateMockStockData(ticker: string): StockData {
     currency: 'USD',
     quote,
     history: compactHistory,
-    indicators: calculateIndicators(compactHistory),
+    indicators,
+    dataQuality,
   };
 }
 
@@ -186,6 +191,7 @@ export async function getStockDataInternal(ticker: string): Promise<StockData> {
             },
             history,
             indicators: calculateIndicators(history),
+            dataQuality: validateMarketData(history, lastQuote.close),
           };
 
           await cacheStockData(cleanTicker, stockData, 'stock data');

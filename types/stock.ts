@@ -51,6 +51,7 @@ export interface StockData {
   quote: StockQuote;
   history: HistoricalQuote[];
   indicators: TechnicalIndicators;
+  dataQuality?: import('../lib/data-quality').DataQualityReport;
 }
 
 export interface PredictionMetrics {
@@ -93,6 +94,7 @@ export interface PredictionResult {
   modelVersion?: 'V1' | 'V2' | 'V3';
   predictedPrice?: number;
   timeframe?: string;
+  dataQualityScore?: number;
   // Advanced Trust & Explainability Fields
   probabilities?: {
     bullish: number;

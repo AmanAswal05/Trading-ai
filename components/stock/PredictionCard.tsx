@@ -38,6 +38,7 @@ interface PredictionCardProps {
     signalStrength?: 'NO_SIGNAL' | 'WEAK_SIGNAL' | 'MODERATE_SIGNAL' | 'STRONG_SIGNAL';
     reliabilityGrade?: 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT_DATA';
     reliabilityWarnings?: string[];
+    dataQualityScore?: number;
     explainability?: {
       rsiContribution: number;
       macdContribution: number;
@@ -155,6 +156,26 @@ export default function PredictionCard({ currentPrice, prediction }: PredictionC
               <p className="text-[10.5px] text-text-secondary leading-relaxed">
                 Historically, setups matching similar timeframe and confidence levels achieved <span className="font-bold text-accent-green">{similarRate}%</span> accuracy based on <span className="font-bold text-text-primary">{similarCount}</span> verified predictions.
               </p>
+            </div>
+          )}
+
+          {/* Data Quality Score (if available) */}
+          {prediction.dataQualityScore !== undefined && (
+            <div className="mt-4 pt-4 border-t border-border-custom w-full">
+              <div className="flex items-center justify-between text-xs sm:text-sm">
+                <span className="text-text-secondary flex items-center">
+                  Data Quality
+                </span>
+                <span className={`font-semibold ${prediction.dataQualityScore < 60 ? 'text-accent-red' : prediction.dataQualityScore < 80 ? 'text-accent-yellow' : 'text-accent-green'}`}>
+                  {prediction.dataQualityScore}/100
+                </span>
+              </div>
+              {prediction.dataQualityScore < 60 && (
+                <div className="mt-2 text-xs text-accent-red/90 bg-accent-red/10 p-2 rounded-md flex items-start text-left">
+                  <AlertTriangle className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 mt-0.5" />
+                  <span className="leading-tight">Unreliable data detected. Prediction confidence capped.</span>
+                </div>
+              )}
             </div>
           )}
         </div>

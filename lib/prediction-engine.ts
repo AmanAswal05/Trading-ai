@@ -10,6 +10,7 @@ import { runMetaModel } from './meta-model';
 import { buildPredictionReliabilityDecision, ReliabilityDecision } from './prediction-analytics';
 import { evaluateTradeability, TradeFilterThresholds, TradeFilterInput } from './tradeFilterEngine';
 import { MacroContext, applySectorMacroSensitivity } from './macroContext';
+import { validateMarketData } from './data-quality';
 
 export interface TuningConfig {
   weightSma200: number;
@@ -432,7 +433,7 @@ export function generatePrediction(
     }
   }
 
-  const confidence = Math.min(100, Math.max(0, calibratedConfidence));
+  let confidence = Math.min(100, Math.max(0, calibratedConfidence));
   let finalConfidence = Math.round(calibratedConfidence);
 
   // MACRO CONTEXT ADJUSTMENT DEFERRED TO LATER
@@ -583,6 +584,19 @@ export function generatePrediction(
     aiReasoningSummary = `Ensemble meta-model analysis indicates ${directionText} for ${ticker} over the ${timeframe} horizon. XGBoost: ${(ensembleMetrics.xgbProbability*100).toFixed(0)}%, LightGBM: ${(ensembleMetrics.lgbProbability*100).toFixed(0)}%, RF: ${(ensembleMetrics.rfProbability*100).toFixed(0)}%, LR: ${(ensembleMetrics.lrProbability*100).toFixed(0)}%. Model Agreement Score: ${ensembleMetrics.modelAgreementScore}%.`;
   }
 
+  // ─── 11. Data Quality Gate ───
+  const dataQuality = validateMarketData(history, price);
+  if (!dataQuality.isReliable) {
+    confidence = Math.min(confidence, 55);
+    riskTier = 'HIGH';
+    
+    if (signalStrength === 'STRONG_SIGNAL') {
+      signalStrength = 'MODERATE_SIGNAL';
+    }
+    
+    aiReasoningSummary = `[WARNING: LOW DATA QUALITY - ${dataQuality.warnings[0]}] ` + aiReasoningSummary;
+  }
+
   const result: PredictionResult = {
     ticker,
     direction,
@@ -638,6 +652,7 @@ export function generatePrediction(
     reliabilityGrade: reliabilityDecision?.reliabilityGrade,
     reliabilityWarnings: reliabilityDecision?.warnings,
     confidenceBeforeFilter: rawConfidence,
+    dataQualityScore: dataQuality.score,
     confidenceAfterFilter: confidence,
     signalQuality: signalStrength,
     filterReason: reliabilityDecision?.warnings.join('; '),
