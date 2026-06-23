@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { runYearlyWalkForwardValidation } from '../lib/backtesting/walk-forward-validation';
+import { runWalkForwardValidation } from '../lib/backtesting/walk-forward-validation';
+import { WalkForwardConfig } from '../lib/backtesting/types';
 import { PredictionRecord } from '../lib/predictions-db';
 import { calculateECE } from '../lib/confidenceCalibration';
 
@@ -173,11 +174,17 @@ async function run() {
   const group = 'ALL';
   console.log(`\nRunning Walk-Forward with Ablation Group: ${group}`);
   
-  const wfResults = await runYearlyWalkForwardValidation(historicalData, minYear, maxYear, 7, group);
+  const wfConfig: WalkForwardConfig = {
+    trainYears: 1,
+    validateMonths: 0,
+    testMonths: 12,
+    stepMonths: 12
+  };
+  const wfResults = await runWalkForwardValidation(historicalData, `${minYear}-01-01`, `${maxYear}-12-31`, wfConfig, 7, group);
   
   const allTestPredictions: PredictionRecord[] = [];
-  wfResults.folds.forEach(f => {
-    f.predictions.forEach(p => allTestPredictions.push(p));
+  wfResults.folds.forEach((f: any) => {
+    f.predictions.forEach((p: any) => allTestPredictions.push(p));
   });
 
   const res = calculateMetrics(allTestPredictions);

@@ -2,6 +2,7 @@
 import { OHLCVBar } from './types';
 import { generatePrediction } from '../prediction-engine';
 import { computeIndicatorsFromHistory } from './data-fetcher';
+import { saveWalkForwardMetrics, WalkForwardMetric } from './data-cache';
 import { PredictionRecord } from '../predictions-db';
 import { fitIsotonicCalibrator, fitTemperatureScaler, compareCalibrationMethods, CalibrationResult, calculateECE } from '../confidenceCalibration';
 import { extractFeatures, fitScaler, transformFeatures, SmartFeatures, ScalerMetadata } from '../featureEngineering';
@@ -26,6 +27,9 @@ export interface WalkForwardResult {
   medianError: number;
   brierScore: number;
   ece: number;
+  averageReturn: number;
+  maxDrawdown: number;
+  sharpe: number;
   predictions: PredictionRecord[];
   calibrationResult?: CalibrationResult;
 }
@@ -48,21 +52,30 @@ function addDays(dateStr: string, days: number): string {
   return d.toISOString().split('T')[0];
 }
 
-export async function runYearlyWalkForwardValidation(
+import { WalkForwardConfig } from './types';
+import { generateWalkForwardWindows } from './walk-forward';
+
+export async function runWalkForwardValidation(
   historicalData: Record<string, OHLCVBar[]>,
-  minYear: number,
-  maxYear: number,
+  startDate: string,
+  endDate: string,
+  config: WalkForwardConfig,
   horizonDays: number = 7,
   ablationGroup: string = 'BASELINE'
 ): Promise<WalkForwardAggregate> {
   const folds: WalkForwardResult[] = [];
-  let foldId = 1;
+  
+  const windows = generateWalkForwardWindows(startDate, endDate, config);
 
-  for (let testYear = minYear + 1; testYear <= maxYear; testYear++) {
-    const trainEnd = `${testYear - 1}-12-31`;
-    const trainStart = `${minYear}-01-01`; // expanding window
-    const testStart = `${testYear}-01-01`;
-    const testEnd = `${testYear}-12-31`;
+  for (const window of windows) {
+    const foldId = window.index + 1;
+    // We will expand train window from the start to `window.trainEnd` to avoid losing data, 
+    // but the `generateWalkForwardWindows` defines `trainStart`. We can just use `startDate` to `trainEnd` for expanding window, 
+    // or use strictly `trainStart` to `trainEnd` for a rolling window. Let's use rolling:
+    const trainStart = window.trainStart;
+    const trainEnd = window.trainEnd;
+    const testStart = window.testStart;
+    const testEnd = window.testEnd;
 
     console.log(`\n[WalkForward] Fold ${foldId}: Train ${trainStart} to ${trainEnd} | Test ${testStart} to ${testEnd}`);
 
@@ -422,8 +435,37 @@ export async function runYearlyWalkForwardValidation(
 
     const errors = testRecords.map(r => r.error_percentage || 0).sort((a, b) => a - b);
     const medianErr = errors.length > 0 ? errors[Math.floor(errors.length / 2)] * 100 : 0;
+    
+    // Average Return & Drawdown
+    let totalReturn = 0;
+    let peakReturn = 0;
+    let maxDrawdown = 0;
+    let currentCumulative = 1;
+    const dailyReturns: number[] = [];
 
-    console.log(`[WalkForward] Fold ${foldId} Test Results: Accuracy: ${overallAcc.toFixed(2)}%, Tradeable: ${tradeableAcc.toFixed(2)}% (${tradeable.length} trades), ECE: ${ece.toFixed(2)}%`);
+    // Sort chronologically for returns simulation
+    const chronologicalRecords = [...testRecords].sort((a, b) => a.prediction_date.localeCompare(b.prediction_date));
+    for (const r of chronologicalRecords) {
+        if (r.signal_strength !== 'NO_SIGNAL' && r.actual_price && r.current_price) {
+           const pct = (r.actual_price - r.current_price) / r.current_price;
+           const gain = r.predicted_direction === 'UP' ? pct : -pct;
+           dailyReturns.push(gain);
+           totalReturn += gain;
+           currentCumulative *= (1 + gain);
+           
+           if (currentCumulative > peakReturn) peakReturn = currentCumulative;
+           const dd = (peakReturn - currentCumulative) / peakReturn;
+           if (dd > maxDrawdown) maxDrawdown = dd;
+        }
+    }
+    const averageReturn = dailyReturns.length > 0 ? totalReturn / dailyReturns.length : 0;
+    
+    // Simple Sharpe
+    const meanRet = dailyReturns.length > 0 ? dailyReturns.reduce((a,b)=>a+b,0) / dailyReturns.length : 0;
+    const stdDev = dailyReturns.length > 0 ? Math.sqrt(dailyReturns.reduce((sq, n) => sq + Math.pow(n - meanRet, 2), 0) / dailyReturns.length) : 0;
+    const sharpe = stdDev > 0 ? (meanRet / stdDev) * Math.sqrt(252) : 0;
+
+    console.log(`[WalkForward] Fold ${foldId} Test Results: Accuracy: ${overallAcc.toFixed(2)}%, Tradeable: ${tradeableAcc.toFixed(2)}% (${tradeable.length} trades), Sharpe: ${sharpe.toFixed(2)}, ECE: ${ece.toFixed(2)}%`);
 
     folds.push({
       foldId,
@@ -439,11 +481,12 @@ export async function runYearlyWalkForwardValidation(
       medianError: medianErr,
       brierScore: brier,
       ece,
+      averageReturn: averageReturn * 100, // as percentage
+      maxDrawdown: maxDrawdown * 100, // as percentage
+      sharpe,
       predictions: testRecords,
       calibrationResult
     });
-
-    foldId++;
   }
 
   // Aggregate
@@ -465,6 +508,9 @@ export async function runYearlyWalkForwardValidation(
     brierSum += f.brierScore * f.totalPredictions;
   });
 
+  // Save detailed metrics to DB
+  saveDetailedMetricsToDB(folds, horizonDays);
+
   return {
     totalFolds: folds.length,
     totalPredictions: totalPreds,
@@ -475,4 +521,71 @@ export async function runYearlyWalkForwardValidation(
     winLossRatio: folds.length > 0 ? folds.reduce((sum, f) => sum + f.winLossRatio, 0) / folds.length : 0,
     folds
   };
+}
+
+function saveDetailedMetricsToDB(folds: WalkForwardResult[], horizonDays: number) {
+  const allTestPredictions: PredictionRecord[] = [];
+  folds.forEach(f => {
+    f.predictions.forEach(p => allTestPredictions.push(p));
+  });
+
+  // Group by ticker, regime, confidence_bucket
+  const groups = new Map<string, PredictionRecord[]>();
+  
+  const getBucket = (conf: number) => {
+    if (conf >= 90) return '90-100';
+    if (conf >= 80) return '80-90';
+    if (conf >= 70) return '70-80';
+    if (conf >= 60) return '60-70';
+    return '0-60';
+  };
+
+  for (const p of allTestPredictions) {
+    if (p.signal_strength === 'NO_SIGNAL') continue;
+    
+    const ticker = p.ticker;
+    const regime = p.trend_regime || 'UNKNOWN';
+    const conf = p.confidence_score ?? 50;
+    const bucket = getBucket(conf);
+    
+    const key = `${ticker}|${horizonDays}D|${regime}|${bucket}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(p);
+  }
+
+  const metrics: WalkForwardMetric[] = [];
+  
+  for (const [key, records] of groups.entries()) {
+    const [ticker, timeframe, regime, bucket] = key.split('|');
+    const correct = records.filter(r => r.prediction_result === 'CORRECT').length;
+    const accuracy = correct / records.length;
+    
+    // Sharpe approximation
+    let totalReturn = 0;
+    const dailyReturns: number[] = [];
+    for (const r of records) {
+      if (r.actual_price && r.current_price) {
+        const pct = (r.actual_price - r.current_price) / r.current_price;
+        const gain = r.predicted_direction === 'UP' ? pct : -pct;
+        dailyReturns.push(gain);
+        totalReturn += gain;
+      }
+    }
+    const meanRet = dailyReturns.length > 0 ? totalReturn / dailyReturns.length : 0;
+    const stdDev = dailyReturns.length > 0 ? Math.sqrt(dailyReturns.reduce((sq, n) => sq + Math.pow(n - meanRet, 2), 0) / dailyReturns.length) : 0;
+    const sharpe = stdDev > 0 ? (meanRet / stdDev) * Math.sqrt(252) : 0;
+
+    metrics.push({
+      ticker,
+      timeframe,
+      regime,
+      confidenceBucket: bucket,
+      accuracy: accuracy * 100,
+      sharpe,
+      trades: records.length,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  saveWalkForwardMetrics(metrics);
 }

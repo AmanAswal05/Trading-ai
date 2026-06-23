@@ -55,9 +55,72 @@ function getDb() {
       created_at TEXT NOT NULL,
       PRIMARY KEY (job_id)
     );
+
+    CREATE TABLE IF NOT EXISTS walk_forward_metrics (
+      ticker TEXT NOT NULL,
+      timeframe TEXT NOT NULL,
+      regime TEXT NOT NULL,
+      confidence_bucket TEXT NOT NULL,
+      accuracy REAL NOT NULL,
+      sharpe REAL NOT NULL,
+      trades INTEGER NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (ticker, timeframe, regime, confidence_bucket)
+    );
   `);
 
   return db;
+}
+
+export interface WalkForwardMetric {
+  ticker: string;
+  timeframe: string;
+  regime: string;
+  confidenceBucket: string;
+  accuracy: number;
+  sharpe: number;
+  trades: number;
+  updatedAt: string;
+}
+
+export function saveWalkForwardMetrics(metrics: WalkForwardMetric[]) {
+  if (typeof window !== 'undefined' || metrics.length === 0) return;
+  const d = getDb();
+  const insert = d.prepare(`
+    INSERT OR REPLACE INTO walk_forward_metrics 
+    (ticker, timeframe, regime, confidence_bucket, accuracy, sharpe, trades, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const insertMany = d.transaction((rows: WalkForwardMetric[]) => {
+    for (const row of rows) {
+      insert.run(row.ticker, row.timeframe, row.regime, row.confidenceBucket, row.accuracy, row.sharpe, row.trades, row.updatedAt);
+    }
+  });
+  insertMany(metrics);
+}
+
+export function getWalkForwardMetrics(ticker?: string): WalkForwardMetric[] {
+  if (typeof window !== 'undefined') return [];
+  const d = getDb();
+  
+  let rows;
+  if (ticker) {
+    rows = d.prepare('SELECT * FROM walk_forward_metrics WHERE ticker = ?').all(ticker);
+  } else {
+    rows = d.prepare('SELECT * FROM walk_forward_metrics').all();
+  }
+  
+  return rows.map((r: any) => ({
+    ticker: r.ticker,
+    timeframe: r.timeframe,
+    regime: r.regime,
+    confidenceBucket: r.confidence_bucket,
+    accuracy: r.accuracy,
+    sharpe: r.sharpe,
+    trades: r.trades,
+    updatedAt: r.updated_at
+  }));
 }
 
 // ─── OHLCV Cache Operations ────────────────────────────────────────────────────

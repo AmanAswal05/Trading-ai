@@ -604,6 +604,56 @@ export function generatePrediction(
     }
   }
 
+  // ─── 12. Walk-Forward Accuracy Guardrail ───
+  let wfAccuracyWarning = '';
+  if (typeof window === 'undefined') {
+    try {
+      const { getWalkForwardMetrics } = require('./backtesting/data-cache');
+      const wfMetrics = getWalkForwardMetrics(ticker);
+      
+      const getBucket = (conf: number) => {
+        if (conf >= 90) return '90-100';
+        if (conf >= 80) return '80-90';
+        if (conf >= 70) return '70-80';
+        if (conf >= 60) return '60-70';
+        return '0-60';
+      };
+
+      const currentBucket = getBucket(confidence);
+      
+      const relevantMetrics = wfMetrics.filter((m: any) => 
+        m.timeframe === timeframe && 
+        m.regime === regimeClass.regime &&
+        m.confidenceBucket === currentBucket
+      );
+
+      if (relevantMetrics.length > 0) {
+        // Average the accuracy if multiple matches (usually just 1)
+        const avgWfAcc = relevantMetrics.reduce((sum: number, m: any) => sum + m.accuracy, 0) / relevantMetrics.length;
+        const totalWfTrades = relevantMetrics.reduce((sum: number, m: any) => sum + m.trades, 0);
+
+        if (totalWfTrades >= 30 && avgWfAcc < 50) {
+          confidence = Math.min(confidence, 55);
+          riskTier = 'HIGH';
+          if (signalStrength === 'STRONG_SIGNAL' || signalStrength === 'VERY_STRONG_SIGNAL' as any) {
+            signalStrength = 'MODERATE_SIGNAL';
+          }
+          wfAccuracyWarning = `[WALK-FORWARD PENALTY: Historical out-of-sample accuracy for this segment is poor (${avgWfAcc.toFixed(1)}%). Confidence capped.] `;
+        }
+      } else {
+        // Not enough validated history
+        wfAccuracyWarning = `[WALK-FORWARD UNVALIDATED: Not enough validated history for this segment to confirm reliability.] `;
+        confidence = Math.min(confidence, 75); // Cap at 75 if unvalidated
+      }
+    } catch {
+      // Ignore if DB is not ready or not in node environment
+    }
+  }
+
+  if (wfAccuracyWarning) {
+    aiReasoningSummary = wfAccuracyWarning + aiReasoningSummary;
+  }
+
   const result: PredictionResult = {
     ticker,
     direction,
