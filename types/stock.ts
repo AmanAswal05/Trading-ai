@@ -138,6 +138,13 @@ export interface PredictionResult {
   maxPositionSize?: number;
   stockReliabilityScore?: number;
   timeframeReliabilityScore?: number;
+  featureQualityScore?: number;
+  featureExplanations?: {
+    topBullish: string[];
+    topBearish: string[];
+    conflicting: string[];
+    missingWeak: string[];
+  };
   insufficientEdge?: boolean;
   tradeFilterScore?: number;
   tradeFilterDecision?: string;

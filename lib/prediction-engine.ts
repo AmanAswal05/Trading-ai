@@ -304,6 +304,82 @@ export function generatePrediction(
     }
   }
 
+  // ─── 7.5 Advanced Feature Extraction & Scoring ───
+  let safeRawFeatures = rawFeatures as any;
+  if (!safeRawFeatures && history && history.length >= 200) {
+    try {
+      const { extractFeatures } = require('./featureEngineering');
+      safeRawFeatures = extractFeatures(history, history.length - 1, undefined, undefined, macroContext);
+    } catch (_e) {
+      // ignore
+    }
+  }
+
+  let featureQualityScore = 50;
+  const featureExplanations = {
+    topBullish: [] as string[],
+    topBearish: [] as string[],
+    conflicting: [] as string[],
+    missingWeak: [] as string[]
+  };
+
+  if (safeRawFeatures) {
+    let bullishScore = 0;
+    let bearishScore = 0;
+    
+    // Evaluate Trend
+    if (safeRawFeatures.trendStrength > 0.6) {
+      bullishScore += 20;
+      featureExplanations.topBullish.push('Strong structural uptrend');
+    } else if (safeRawFeatures.trendStrength < 0.2) {
+      bearishScore += 20;
+      featureExplanations.topBearish.push('Weak or negative structural trend');
+    }
+
+    // Evaluate Alignment
+    if (safeRawFeatures.alignmentScore && safeRawFeatures.alignmentScore > 75) {
+      bullishScore += 25;
+      featureExplanations.topBullish.push('Multi-timeframe momentum alignment');
+    } else if (safeRawFeatures.alignmentScore && safeRawFeatures.alignmentScore < 40) {
+      bearishScore += 25;
+      featureExplanations.topBearish.push('Multi-timeframe momentum conflict');
+    }
+
+    // Evaluate RSI Divergence
+    if (safeRawFeatures.rsiDivergence > 0) {
+      bullishScore += 15;
+      featureExplanations.topBullish.push('Bullish RSI Divergence detected');
+    } else if (safeRawFeatures.rsiDivergence < 0) {
+      bearishScore += 15;
+      featureExplanations.topBearish.push('Bearish RSI Divergence detected');
+    }
+
+    // Breakout vs Mean Reversion
+    if (safeRawFeatures.breakoutVsMeanReversion > 0) {
+      featureExplanations.topBullish.push('Volatility expansion (Breakout setup)');
+      bullishScore += 10;
+    } else {
+      featureExplanations.missingWeak.push('Volatility compression (Choppy/Mean-reverting)');
+    }
+
+    // Volume Confirmation
+    if (safeRawFeatures.volumeConfirmationScore > 0) {
+      bullishScore += 15;
+      featureExplanations.topBullish.push('Upward moves confirmed by volume');
+    } else if (safeRawFeatures.volumeConfirmationScore < 0) {
+      bearishScore += 15;
+      featureExplanations.topBearish.push('Downward moves confirmed by volume');
+    }
+
+    featureQualityScore = Math.max(0, Math.min(100, 50 + bullishScore - bearishScore));
+
+    if (bullishScore > 30 && bearishScore > 30) {
+      featureExplanations.conflicting.push('Mixed signals between trend, momentum, and volume');
+    }
+  } else {
+    featureExplanations.missingWeak.push('Insufficient historical data for advanced ML feature extraction');
+  }
+
   // ─── PRIORITY 8 ENSEMBLE ADJUSTMENT ───
   if (ensembleMetrics) {
     // If the base models strongly disagree, lower the confidence further
@@ -341,8 +417,8 @@ export function generatePrediction(
 
   // Multi-Timeframe Alignment Adjustment (Priority 5)
   let alignmentScore = 50;
-  if (rawFeatures && rawFeatures.alignmentScore !== undefined) {
-    alignmentScore = rawFeatures.alignmentScore;
+  if (safeRawFeatures && safeRawFeatures.alignmentScore !== undefined) {
+    alignmentScore = safeRawFeatures.alignmentScore;
     if (alignmentScore > 85) {
       multiTimeframeAdjustedConfidence = Math.min(100, multiTimeframeAdjustedConfidence + 5);
     } else if (alignmentScore < 40) {
@@ -350,6 +426,13 @@ export function generatePrediction(
     } else if (alignmentScore < 60) {
       multiTimeframeAdjustedConfidence = Math.max(0, multiTimeframeAdjustedConfidence - 10);
     }
+  }
+
+  // Cap confidence if feature quality is extremely poor
+  if (featureQualityScore < 30) {
+    multiTimeframeAdjustedConfidence = Math.min(multiTimeframeAdjustedConfidence, 45); // Hard cap on weak features
+  } else if (featureQualityScore > 75) {
+    multiTimeframeAdjustedConfidence = Math.min(100, multiTimeframeAdjustedConfidence + 5); // Boost on strong features
   }
   
   // Use MTF adjusted confidence as the starting point for statistical calibration
@@ -693,6 +776,8 @@ export function generatePrediction(
     maxPositionSize: 0,
     stockReliabilityScore: reliabilityDecision?.breakdown.ticker.accuracy,
     timeframeReliabilityScore: reliabilityDecision?.breakdown.timeframe.accuracy,
+    featureQualityScore,
+    featureExplanations,
     insufficientEdge: signalStrength === 'NO_SIGNAL',
   };
 

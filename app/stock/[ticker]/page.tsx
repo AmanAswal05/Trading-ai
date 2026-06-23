@@ -16,7 +16,7 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import PaywallModal from '@/components/ui/PaywallModal';
 import { StockAnalysisSkeleton } from '@/components/ui/Skeleton';
 import { StockData, PredictionResult, NewsArticle } from '@/types/stock';
-import { ChevronLeft, RefreshCw, AlertTriangle, Activity } from 'lucide-react';
+import { ChevronLeft, RefreshCw, AlertTriangle, Activity, Target, CheckCircle2, XCircle, AlertCircle, Info } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function StockAnalysisPage() {
@@ -277,6 +277,95 @@ export default function StockAnalysisPage() {
                     <p className="text-xs text-text-secondary leading-relaxed mt-1">
                       {prediction.regimeReason}
                     </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Feature Strength Card */}
+            {prediction.featureQualityScore !== undefined && prediction.featureExplanations && (
+              <div className="p-5 border border-border-custom bg-bg-card rounded-xl shadow-sm transition-theme">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                    <Target className="w-4 h-4 text-accent-purple" />
+                    Feature Quality Score
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <div className="w-32 h-2 bg-bg-secondary rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full ${
+                          prediction.featureQualityScore >= 75 ? 'bg-accent-green' :
+                          prediction.featureQualityScore >= 40 ? 'bg-accent-blue' :
+                          'bg-accent-red'
+                        }`}
+                        style={{ width: `${prediction.featureQualityScore}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-text-primary w-8 text-right">
+                      {prediction.featureQualityScore}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {prediction.featureExplanations.topBullish.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-accent-green flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Bullish Drivers
+                      </h4>
+                      <ul className="space-y-1.5">
+                        {prediction.featureExplanations.topBullish.map((feat, i) => (
+                          <li key={i} className="text-xs text-text-secondary pl-5 relative before:content-[''] before:absolute before:left-1.5 before:top-1.5 before:w-1.5 before:h-1.5 before:bg-accent-green/50 before:rounded-full">
+                            {feat}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {prediction.featureExplanations.topBearish.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-accent-red flex items-center gap-1.5">
+                        <XCircle className="w-3.5 h-3.5" /> Bearish Drivers
+                      </h4>
+                      <ul className="space-y-1.5">
+                        {prediction.featureExplanations.topBearish.map((feat, i) => (
+                          <li key={i} className="text-xs text-text-secondary pl-5 relative before:content-[''] before:absolute before:left-1.5 before:top-1.5 before:w-1.5 before:h-1.5 before:bg-accent-red/50 before:rounded-full">
+                            {feat}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {prediction.featureExplanations.conflicting.length > 0 && (
+                    <div className="space-y-2 col-span-1 md:col-span-2 mt-2 pt-3 border-t border-border-custom">
+                      <h4 className="text-xs font-bold text-accent-yellow flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5" /> Signal Conflicts
+                      </h4>
+                      <ul className="space-y-1.5">
+                        {prediction.featureExplanations.conflicting.map((feat, i) => (
+                          <li key={i} className="text-xs text-text-secondary pl-5 relative before:content-[''] before:absolute before:left-1.5 before:top-1.5 before:w-1.5 before:h-1.5 before:bg-accent-yellow/50 before:rounded-full">
+                            {feat}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {prediction.featureExplanations.missingWeak.length > 0 && (
+                    <div className="space-y-2 col-span-1 md:col-span-2 mt-2 pt-3 border-t border-border-custom">
+                      <h4 className="text-xs font-bold text-text-muted flex items-center gap-1.5">
+                        <Info className="w-3.5 h-3.5" /> Missing or Weak Features
+                      </h4>
+                      <ul className="space-y-1.5">
+                        {prediction.featureExplanations.missingWeak.map((feat, i) => (
+                          <li key={i} className="text-xs text-text-muted pl-5 relative before:content-[''] before:absolute before:left-1.5 before:top-1.5 before:w-1.5 before:h-1.5 before:bg-text-muted/50 before:rounded-full">
+                            {feat}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               </div>

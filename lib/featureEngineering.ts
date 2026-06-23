@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import { HistoricalQuote, TechnicalIndicators } from '../types/stock';
-import { SMA, EMA, ATR } from 'technicalindicators';
+import { SMA, EMA, ATR, RSI, BollingerBands } from 'technicalindicators';
 
 export interface SmartFeatures {
   // Trend Features
@@ -37,6 +37,15 @@ export interface SmartFeatures {
   higherTimeframeStrength: number;
   alignmentScore: number;
   timeframeConflict: number; // 1 (Conflict), 0 (No Conflict)
+
+  // Advanced ML Features
+  volatilityAdjustedMomentum: number;
+  rsiDivergence: number; // Positive = Bullish Div, Negative = Bearish Div
+  movingAverageZScore: number;
+  atrRiskDistance: number;
+  breakoutVsMeanReversion: number; // >0 Breakout context, <0 Mean-reversion
+  drawdown: number;
+  bounce: number;
 
   // Macro Features (Priority 10)
   macroNiftyStrength: number;
@@ -241,6 +250,37 @@ export function extractFeatures(
   const macroUsdInrTrend = macroContext ? (macroContext.usdInrTrend === 'RISING' ? 1 : macroContext.usdInrTrend === 'FALLING' ? -1 : 0) : 0;
   const macroRiskScore = macroContext ? macroContext.macroRiskScore : 50;
 
+  // --- Advanced ML Features ---
+  const rsi14Arr = RSI.calculate({ values: closes, period: 14 });
+  const currentRSI = rsi14Arr.length > 0 ? rsi14Arr[rsi14Arr.length - 1] : 50;
+  
+  const volatilityAdjustedMomentum = currentATR > 0 ? (currentRSI - 50) / (currentATR / currentPrice * 100) : 0;
+  
+  let rsiDivergence = 0;
+  if (closes.length >= 14 && rsi14Arr.length >= 14) {
+    const priceSlope = (closes[closes.length - 1] - closes[closes.length - 14]) / closes[closes.length - 14];
+    const rsiSlope = (rsi14Arr[rsi14Arr.length - 1] - rsi14Arr[rsi14Arr.length - 14]) / 100;
+    if (priceSlope < -0.02 && rsiSlope > 0.05) rsiDivergence = 1;
+    if (priceSlope > 0.02 && rsiSlope < -0.05) rsiDivergence = -1;
+  }
+
+  const movingAverageZScore = rollingVolatility20 > 0 ? (currentPrice - ema20) / (currentPrice * rollingVolatility20) : 0;
+
+  const last20Lows = lows.slice(-20);
+  const minLow20 = last20Lows.length > 0 ? Math.min(...last20Lows) : currentPrice;
+  const atrRiskDistance = currentATR > 0 ? (currentPrice - minLow20) / currentATR : 0;
+
+  const bbArr = BollingerBands.calculate({ values: closes, period: 20, stdDev: 2 });
+  const currentBB = bbArr.length > 0 ? bbArr[bbArr.length - 1] : { upper: currentPrice, lower: currentPrice, pb: 0 };
+  const bbWidth = currentBB.upper > currentBB.lower ? (currentBB.upper - currentBB.lower) / currentPrice : 0;
+  const breakoutVsMeanReversion = bbWidth > (rollingVolatility20 * 4) ? 1 : -1;
+
+  const recent50 = slice.slice(-50);
+  const peak50 = recent50.length > 0 ? Math.max(...recent50.map(q => q.close)) : currentPrice;
+  const trough50 = recent50.length > 0 ? Math.min(...recent50.map(q => q.close)) : currentPrice;
+  const drawdown = peak50 > 0 ? (peak50 - currentPrice) / peak50 : 0;
+  const bounce = trough50 > 0 ? (currentPrice - trough50) / trough50 : 0;
+
   return {
     trendStrength,
     trendDuration,
@@ -267,6 +307,13 @@ export function extractFeatures(
     higherTimeframeStrength: higherAnalysis.trendStrength,
     alignmentScore,
     timeframeConflict,
+    volatilityAdjustedMomentum,
+    rsiDivergence,
+    movingAverageZScore,
+    atrRiskDistance,
+    breakoutVsMeanReversion,
+    drawdown,
+    bounce,
     macroNiftyStrength,
     macroBankNiftyStrength,
     macroVixLevel,
