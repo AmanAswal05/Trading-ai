@@ -69,14 +69,19 @@ export default function WalkForwardDashboard() {
                 <th className="px-6 py-4 font-semibold">Ticker</th>
                 <th className="px-6 py-4 font-semibold">Timeframe</th>
                 <th className="px-6 py-4 font-semibold">Regime</th>
-                <th className="px-6 py-4 font-semibold">Confidence Bucket</th>
+                <th className="px-6 py-4 font-semibold">Predicted Conf.</th>
+                <th className="px-6 py-4 font-semibold">Actual Acc.</th>
+                <th className="px-6 py-4 font-semibold">Cal. Gap</th>
                 <th className="px-6 py-4 font-semibold">Trades</th>
-                <th className="px-6 py-4 font-semibold">Accuracy</th>
                 <th className="px-6 py-4 font-semibold">Sharpe</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-custom">
-              {metrics.map((m, i) => (
+              {metrics.map((m, i) => {
+                const parts = m.confidenceBucket.split('-');
+                const midpoint = (parseInt(parts[0]) + parseInt(parts[1])) / 2;
+                const gap = m.accuracy - midpoint;
+                return (
                 <tr key={i} className="hover:bg-bg-secondary/30 transition-colors">
                   <td className="px-6 py-4 font-bold text-text-primary">{m.ticker}</td>
                   <td className="px-6 py-4">
@@ -90,19 +95,24 @@ export default function WalkForwardDashboard() {
                     </span>
                   </td>
                   <td className="px-6 py-4 font-mono text-sm">{m.confidenceBucket}%</td>
-                  <td className="px-6 py-4">{m.trades}</td>
                   <td className="px-6 py-4">
                     <span className={`font-bold ${m.accuracy >= 65 ? 'text-accent-green' : m.accuracy < 50 ? 'text-accent-red' : 'text-text-primary'}`}>
                       {m.accuracy.toFixed(1)}%
                     </span>
                   </td>
                   <td className="px-6 py-4">
+                    <span className={`font-bold ${gap > 0 ? 'text-accent-green' : gap < -5 ? 'text-accent-red' : 'text-text-primary'}`}>
+                      {gap > 0 ? '+' : ''}{gap.toFixed(1)}%
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">{m.trades}</td>
+                  <td className="px-6 py-4">
                     <span className={`font-bold ${m.sharpe > 1 ? 'text-accent-green' : m.sharpe < 0 ? 'text-accent-red' : 'text-text-primary'}`}>
                       {m.sharpe.toFixed(2)}
                     </span>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

@@ -535,9 +535,12 @@ function saveDetailedMetricsToDB(folds: WalkForwardResult[], horizonDays: number
   const getBucket = (conf: number) => {
     if (conf >= 90) return '90-100';
     if (conf >= 80) return '80-90';
-    if (conf >= 70) return '70-80';
-    if (conf >= 60) return '60-70';
-    return '0-60';
+    if (conf >= 75) return '75-80';
+    if (conf >= 70) return '70-75';
+    if (conf >= 65) return '65-70';
+    if (conf >= 60) return '60-65';
+    if (conf >= 55) return '55-60';
+    return '50-55';
   };
 
   for (const p of allTestPredictions) {

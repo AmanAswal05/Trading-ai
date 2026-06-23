@@ -604,53 +604,47 @@ export function generatePrediction(
     }
   }
 
-  // ─── 12. Walk-Forward Accuracy Guardrail ───
+  // ─── 12. Walk-Forward Confidence Calibration ───
   let wfAccuracyWarning = '';
   if (typeof window === 'undefined') {
     try {
       const { getWalkForwardMetrics } = require('./backtesting/data-cache');
-      const wfMetrics = getWalkForwardMetrics(ticker);
+      const { calibrateConfidenceFromWalkForward } = require('./confidenceCalibration');
       
-      const getBucket = (conf: number) => {
-        if (conf >= 90) return '90-100';
-        if (conf >= 80) return '80-90';
-        if (conf >= 70) return '70-80';
-        if (conf >= 60) return '60-70';
-        return '0-60';
-      };
-
-      const currentBucket = getBucket(confidence);
+      const wfMetrics = getWalkForwardMetrics(); // Fetch all to allow global fallback
       
-      const relevantMetrics = wfMetrics.filter((m: any) => 
-        m.timeframe === timeframe && 
-        m.regime === regimeClass.regime &&
-        m.confidenceBucket === currentBucket
+      const calResult = calibrateConfidenceFromWalkForward(
+        confidence,
+        timeframe,
+        regimeClass.regime,
+        wfMetrics,
+        ticker
       );
-
-      if (relevantMetrics.length > 0) {
-        // Average the accuracy if multiple matches (usually just 1)
-        const avgWfAcc = relevantMetrics.reduce((sum: number, m: any) => sum + m.accuracy, 0) / relevantMetrics.length;
-        const totalWfTrades = relevantMetrics.reduce((sum: number, m: any) => sum + m.trades, 0);
-
-        if (totalWfTrades >= 30 && avgWfAcc < 50) {
-          confidence = Math.min(confidence, 55);
-          riskTier = 'HIGH';
-          if (signalStrength === 'STRONG_SIGNAL' || signalStrength === 'VERY_STRONG_SIGNAL' as any) {
-            signalStrength = 'MODERATE_SIGNAL';
-          }
-          wfAccuracyWarning = `[WALK-FORWARD PENALTY: Historical out-of-sample accuracy for this segment is poor (${avgWfAcc.toFixed(1)}%). Confidence capped.] `;
-        }
-      } else {
-        // Not enough validated history
-        wfAccuracyWarning = `[WALK-FORWARD UNVALIDATED: Not enough validated history for this segment to confirm reliability.] `;
-        confidence = Math.min(confidence, 75); // Cap at 75 if unvalidated
+      
+      confidence = calResult.calibratedConfidence;
+      wfAccuracyWarning = calResult.reason + ' ';
+      
+      if (confidence < 65 && (signalStrength === 'STRONG_SIGNAL' || signalStrength === 'VERY_STRONG_SIGNAL' as any)) {
+        signalStrength = 'MODERATE_SIGNAL';
+      } else if (confidence < 55) {
+        signalStrength = 'WEAK_SIGNAL';
       }
+      
+      // Update Risk Tier based on new confidence
+      if (confidence < 60) {
+        riskTier = 'HIGH';
+      } else if (confidence >= 75) {
+        riskTier = 'LOW';
+      } else {
+        riskTier = 'MEDIUM';
+      }
+
     } catch {
       // Ignore if DB is not ready or not in node environment
     }
   }
 
-  if (wfAccuracyWarning) {
+  if (wfAccuracyWarning.trim()) {
     aiReasoningSummary = wfAccuracyWarning + aiReasoningSummary;
   }
 

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PredictionRecord } from './predictions-db';
+import { WalkForwardMetric } from './backtesting/data-cache';
 
 export interface IsotonicBucket {
   rangeMin: number;
@@ -331,4 +332,80 @@ export function calibrateConfidence(rawConfidence: number, report: any): number 
     calProb = applyTemperatureScaling(prob, report.temperature);
   }
   return Math.round(calProb * 100);
+}
+
+// ─── Walk-Forward Historical Calibration ───
+
+export function getConfidenceBucket(conf: number) {
+  if (conf >= 90) return '90-100';
+  if (conf >= 80) return '80-90';
+  if (conf >= 75) return '75-80';
+  if (conf >= 70) return '70-75';
+  if (conf >= 65) return '65-70';
+  if (conf >= 60) return '60-65';
+  if (conf >= 55) return '55-60';
+  return '50-55';
+}
+
+export function calibrateConfidenceFromWalkForward(
+  rawConfidence: number,
+  timeframe: string,
+  regime: string,
+  wfMetrics: WalkForwardMetric[],
+  ticker?: string
+): { calibratedConfidence: number; reason: string } {
+  const bucket = getConfidenceBucket(rawConfidence);
+  
+  // 1. Try to find ticker-specific exact match
+  const matchedMetrics = wfMetrics.filter(m => 
+    m.ticker === ticker && 
+    m.timeframe === timeframe && 
+    m.regime === regime && 
+    m.confidenceBucket === bucket
+  );
+  
+  let totalTrades = matchedMetrics.reduce((sum, m) => sum + m.trades, 0);
+  let avgAccuracy = totalTrades > 0 ? matchedMetrics.reduce((sum, m) => sum + (m.accuracy * m.trades), 0) / totalTrades : 0;
+  
+  // 2. If sample size is too small (< 30), fallback to global average across all tickers for this bucket + regime
+  if (totalTrades < 30) {
+    const globalMetrics = wfMetrics.filter(m => 
+      m.timeframe === timeframe && 
+      m.regime === regime && 
+      m.confidenceBucket === bucket
+    );
+    const globalTrades = globalMetrics.reduce((sum, m) => sum + m.trades, 0);
+    if (globalTrades >= 30) {
+      avgAccuracy = globalMetrics.reduce((sum, m) => sum + (m.accuracy * m.trades), 0) / globalTrades;
+      totalTrades = globalTrades;
+    }
+  }
+  
+  // 3. Apply calibration
+  if (totalTrades < 30) {
+    // Still not enough data -> Conservative guardrail
+    const conservativeConf = Math.min(rawConfidence, 60);
+    return {
+      calibratedConfidence: conservativeConf,
+      reason: `[WALK-FORWARD UNVALIDATED: Not enough validated history (${totalTrades} trades). Using conservative confidence.]`
+    };
+  }
+
+  // 4. We have enough trades -> Calibrate towards actual accuracy
+  let newConf = rawConfidence;
+  let reason = '';
+  
+  // If actual accuracy is significantly worse than raw confidence
+  if (avgAccuracy < rawConfidence - 5) {
+     newConf = Math.min(rawConfidence, Math.max(50, avgAccuracy + 5)); // Pull down aggressively but leave a small buffer
+     reason = `[CALIBRATED DOWN: Historical '${bucket}' bucket accuracy is only ${avgAccuracy.toFixed(1)}% (${totalTrades} trades).]`;
+  } else if (avgAccuracy > rawConfidence + 5) {
+     // Model is underconfident, we can bump slightly but safely
+     newConf = Math.min(95, rawConfidence + 2); 
+     reason = `[CALIBRATED UP: Historical '${bucket}' bucket accuracy is strong at ${avgAccuracy.toFixed(1)}%.]`;
+  } else {
+     reason = `[CALIBRATED: Matches historical accuracy (${avgAccuracy.toFixed(1)}%).]`;
+  }
+  
+  return { calibratedConfidence: Math.round(newConf), reason };
 }
