@@ -29,6 +29,10 @@
 # local fallback databases
 /lib/mock-jobs-db.json
 /lib/mock-predictions-db.json
+*.db
+*.sqlite
+artifacts/*.csv
+artifacts/*.png
 
 # debug
 npm-debug.log*

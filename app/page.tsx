@@ -25,22 +25,8 @@ export default function LandingPage() {
   const { formatPrice } = useCurrency();
   const [tape, setTape] = useState<TapeTicker[]>(initialTape);
 
-  // Tick the marquee prices every few seconds for a live market feel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTape((prev) =>
-        prev.map((item) => {
-          const delta = (Math.random() - 0.5) * 0.001 * item.price;
-          const newPrice = Math.max(1, item.price + delta);
-          return {
-            ...item,
-            price: Number(newPrice.toFixed(2)),
-          };
-        })
-      );
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+  // Static initial tape for landing page
+
 
   return (
     <div className="relative flex flex-col justify-between min-h-[calc(100vh-4rem)] bg-bg-primary text-text-primary transition-colors duration-300 overflow-hidden">

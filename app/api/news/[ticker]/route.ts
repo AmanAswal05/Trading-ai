@@ -4,12 +4,6 @@ import { NewsArticle } from '@/types/stock';
 export const dynamic = 'force-dynamic';
 
 function getSentiment(title: string): 'positive' | 'negative' | 'neutral' {
-  const text = title.toLowerCase();
-  const positiveWords = ['surge', 'rally', 'beat', 'record', 'growth', 'buy', 'upgrade', 'gain', 'higher', 'bullish', 'success'];
-  const negativeWords = ['crash', 'fall', 'loss', 'miss', 'cut', 'downgrade', 'warning', 'decline', 'drop', 'slump', 'lower', 'bearish'];
-
-  if (positiveWords.some((w) => text.includes(w))) return 'positive';
-  if (negativeWords.some((w) => text.includes(w))) return 'negative';
   return 'neutral';
 }
 

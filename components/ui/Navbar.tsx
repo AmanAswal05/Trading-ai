@@ -102,15 +102,26 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-blue/15 text-accent-blue transition-colors group-hover:bg-accent-blue/20">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-          <span className="font-sans font-bold text-lg tracking-tight text-text-primary hidden sm:block">
-            StockPredict <span className="text-accent-blue">AI</span>
+        <div className="flex items-center gap-3">
+          {/* Brand Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-blue/15 text-accent-blue transition-colors group-hover:bg-accent-blue/20">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <span className="font-sans font-bold text-lg tracking-tight text-text-primary hidden sm:block">
+              StockPredict <span className="text-accent-blue">AI</span>
+            </span>
+          </Link>
+
+          {/* Live/Demo Badge */}
+          <span className={`hidden sm:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border tracking-wide uppercase ${
+            process.env.NEXT_PUBLIC_LIVE_DATA === 'true' 
+              ? 'bg-accent-green/10 text-accent-green border-accent-green/20'
+              : 'bg-accent-blue/10 text-accent-blue border-accent-blue/20'
+          }`}>
+            {process.env.NEXT_PUBLIC_LIVE_DATA === 'true' ? 'Live Data' : 'Demo Data'}
           </span>
-        </Link>
+        </div>
 
         {/* Quick Search - Autocomplete Search Bar */}
         <div className="flex-1 max-w-xs mx-4 hidden md:block">

@@ -9,11 +9,7 @@ interface NewsPanelProps {
 }
 
 export default function NewsPanel({ articles }: NewsPanelProps) {
-  const sentimentStyles = {
-    positive: 'bg-accent-green/12 text-accent-green border-accent-green/25',
-    negative: 'bg-accent-red/12 text-accent-red border-accent-red/25',
-    neutral: 'bg-bg-secondary text-text-secondary border-border-custom',
-  };
+
 
   return (
     <div className="p-5 border border-border-custom bg-bg-card rounded-xl transition-theme">
@@ -49,13 +45,7 @@ export default function NewsPanel({ articles }: NewsPanelProps) {
                   {art.title}
                 </a>
                 
-                <span
-                  className={`inline-block px-2 py-0.5 rounded border text-[9px] font-mono font-bold tracking-wider leading-none uppercase ${
-                    sentimentStyles[art.sentiment] || sentimentStyles.neutral
-                  }`}
-                >
-                  {art.sentiment}
-                </span>
+
               </div>
               
               <div className="flex items-center justify-between text-[10px] font-mono text-text-muted">
