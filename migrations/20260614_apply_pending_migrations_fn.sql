@@ -93,10 +93,10 @@ BEGIN
     ADD COLUMN IF NOT EXISTS trade_filter_score NUMERIC(5, 2),
     ADD COLUMN IF NOT EXISTS trade_filter_decision TEXT,
     ADD COLUMN IF NOT EXISTS rejection_reasons JSONB DEFAULT '[]'::jsonb,
-    ADD COLUMN IF NOT EXISTS engine_version TEXT,
-    ADD COLUMN IF NOT EXISTS feature_version TEXT,
-    ADD COLUMN IF NOT EXISTS calibration_version TEXT,
-    ADD COLUMN IF NOT EXISTS regime_version TEXT;
+    ADD COLUMN IF NOT EXISTS engine_version TEXT DEFAULT 'unknown',
+    ADD COLUMN IF NOT EXISTS feature_version TEXT DEFAULT 'unknown',
+    ADD COLUMN IF NOT EXISTS calibration_version TEXT DEFAULT 'unknown',
+    ADD COLUMN IF NOT EXISTS regime_version TEXT DEFAULT 'unknown';
     
   result := jsonb_set(result, '{applied}', result->'applied' || '["confidence_and_regime_fields"]');
 

@@ -24,7 +24,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Troubleshooting
 
 ### How to fix "Backtest Failed: Missing prediction columns"
-If you see an error that your database is missing prediction columns, you need to apply the latest migrations to your Supabase instance.
+If you see an error that your database is missing prediction columns (e.g., `engine_version`, `feature_version`, `calibration_version`, `regime_version`, etc.), you need to apply the latest migrations to your Supabase instance.
 
 **Exact Steps:**
 1. Open your [Supabase Dashboard](https://app.supabase.com/).
