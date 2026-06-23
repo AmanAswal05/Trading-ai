@@ -767,10 +767,68 @@ export function generatePrediction(
     aiReasoningSummary = wfAccuracyWarning + aiReasoningSummary;
   }
 
+  // ─── 13. Production Safety Caps (Accuracy Audit Integration) ───
+  let safetyModeActive = false;
+  let finalCappedConfidence = confidence;
+  let capReason = '';
+  const preCapConfidence = confidence;
+
+  if (typeof window === 'undefined') {
+    try {
+      const { getAuditReportSync } = require('./accuracy-audit');
+      const auditReport = getAuditReportSync();
+
+      if (auditReport) {
+        const { badges } = auditReport;
+
+        // If any badge is failing, we activate safety mode
+        if (Object.values(badges).includes('FAIL')) {
+          safetyModeActive = true;
+        }
+
+        // Mock Data Limit
+        if (dataSource === 'mock' || dataSource === 'fallback') {
+          if (finalCappedConfidence > 55) {
+            finalCappedConfidence = 55;
+            capReason = 'Capped at 55% due to mock/fallback data source';
+          }
+        } 
+        // Sample Size Limit
+        else if (badges.sampleSizeHealth === 'FAIL') {
+          if (finalCappedConfidence > 60) {
+            finalCappedConfidence = 60;
+            capReason = 'Capped at 60% due to critically low verified sample size';
+          }
+        }
+        // Calibration / High Confidence Bucket Failure Limit
+        else if (badges.calibrationHealth === 'FAIL') {
+          if (finalCappedConfidence >= 80) {
+            finalCappedConfidence = 79;
+            capReason = 'Capped below 80% due to poor historical calibration at high confidence tiers';
+          }
+        }
+        
+        // Safety Mode Downgrades
+        if (safetyModeActive) {
+          if (signalStrength === 'STRONG_SIGNAL') signalStrength = 'MODERATE_SIGNAL';
+          if (!capReason && finalCappedConfidence > 75) {
+            finalCappedConfidence = 75;
+            capReason = 'General Safety Mode Cap (Audit Failure)';
+          }
+        }
+      }
+    } catch {
+      // Fail silently if audit logic isn't accessible
+    }
+  }
+
+  confidence = finalCappedConfidence;
+  finalConfidence = Math.round(confidence);
+
   const result: PredictionResult = {
     ticker,
     direction,
-    confidence,
+    confidence: finalConfidence,
     targetLow,
     targetHigh,
     riskTier,
@@ -831,6 +889,13 @@ export function generatePrediction(
     featureQualityScore,
     featureExplanations,
     insufficientEdge: signalStrength === 'NO_SIGNAL',
+    safetyModeActive,
+    confidenceBreakdown: {
+      raw: rawConfidence,
+      calibrated: preCapConfidence,
+      final: finalCappedConfidence,
+      capReason: capReason || undefined,
+    }
   };
 
   // Trade Filter Engine Logic

@@ -157,6 +157,13 @@ export interface PredictionResult {
     niftyStrength: number;
     vixLevel: number;
   };
+  safetyModeActive?: boolean;
+  confidenceBreakdown?: {
+    raw: number;
+    calibrated: number;
+    final: number;
+    capReason?: string;
+  };
 }
 
 export interface NewsArticle {

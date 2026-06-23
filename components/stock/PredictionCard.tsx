@@ -54,6 +54,13 @@ interface PredictionCardProps {
       verifiedCount: number;
     };
     macroContext?: any;
+    safetyModeActive?: boolean;
+    confidenceBreakdown?: {
+      raw: number;
+      calibrated: number;
+      final: number;
+      capReason?: string;
+    };
   };
 }
 
@@ -103,8 +110,19 @@ export default function PredictionCard({ currentPrice, prediction }: PredictionC
           <ShieldCheck className="w-3.5 h-3.5 text-accent-blue" /> Machine Learning Output
         </span>
         
-        <div className="my-auto py-4">
+        <div className="my-auto py-4 relative">
+          {prediction.safetyModeActive && (
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-red-500/10 border border-red-500/30 text-red-500 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider z-10 whitespace-nowrap">
+              <AlertTriangle className="w-3 h-3" /> Safety Mode: ON
+            </div>
+          )}
           <ConfidenceGauge confidence={confidence} direction={direction} size={130} />
+          {prediction.confidenceBreakdown && prediction.confidenceBreakdown.capReason && (
+            <div className="mt-4 text-[10px] text-accent-yellow/90 bg-accent-yellow/10 border border-accent-yellow/20 px-2 py-1.5 rounded text-left flex items-start gap-1">
+              <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span>{prediction.confidenceBreakdown.capReason}</span>
+            </div>
+          )}
         </div>
 
         <div className="w-full space-y-4">
@@ -221,6 +239,35 @@ export default function PredictionCard({ currentPrice, prediction }: PredictionC
                   <div className="text-accent-green">Bull: {bullProb}%</div>
                   <div className="text-text-secondary">Neut: {neutProb}%</div>
                   <div className="text-accent-red">Bear: {bearProb}%</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Confidence Breakdown Panel */}
+          {prediction.confidenceBreakdown && (
+            <div className="p-4 border border-border-custom bg-bg-secondary/15 rounded-xl flex flex-col justify-between space-y-3">
+              <div>
+                <span className="text-[9px] font-mono font-bold text-text-muted uppercase tracking-wider">
+                  Confidence Origin
+                </span>
+                <h4 className="text-xs font-bold text-text-primary mt-0.5">Scoring Breakdown</h4>
+              </div>
+
+              <div className="space-y-1.5 text-[10.5px] font-mono">
+                <div className="flex justify-between items-center text-text-secondary">
+                  <span>Raw Indicators:</span>
+                  <span>{prediction.confidenceBreakdown.raw}%</span>
+                </div>
+                <div className="flex justify-between items-center border-y border-border-custom/30 py-1 text-text-secondary">
+                  <span>ML Calibration:</span>
+                  <span>{prediction.confidenceBreakdown.calibrated}%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary font-bold">Final Displayed:</span>
+                  <span className={`font-bold ${prediction.confidenceBreakdown.final < prediction.confidenceBreakdown.raw ? 'text-accent-red' : 'text-accent-green'}`}>
+                    {prediction.confidenceBreakdown.final}%
+                  </span>
                 </div>
               </div>
             </div>

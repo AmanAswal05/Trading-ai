@@ -20,6 +20,32 @@ export interface AuditReport {
   failureReasons: string[];
 }
 
+let cachedReport: AuditReport | null = null;
+let lastAuditTime = 0;
+
+export function getAuditReportSync(): AuditReport | null {
+  // Try to use cache if it's less than 1 hour old
+  if (cachedReport && (Date.now() - lastAuditTime < 3600000)) {
+    return cachedReport;
+  }
+  
+  try {
+    // If we need synchronous access and can't use await, we must rely on the caller or a warm cache.
+    // However, PredictionsDbService.getAllPredictionsSync() exists from previous feature work.
+    const { PredictionsDbService } = require('./predictions-db');
+    const all = PredictionsDbService.getAllPredictionsSync();
+    if (all && all.length > 0) {
+      const verified = all.filter((p: any) => p.status === 'VERIFIED');
+      cachedReport = runAccuracyAudit(verified);
+      lastAuditTime = Date.now();
+      return cachedReport;
+    }
+  } catch (e) {
+    console.warn('[Audit] Failed to compute synchronous audit report:', e);
+  }
+  return null;
+}
+
 export function runAccuracyAudit(verifiedPredictions: any[]): AuditReport {
   const report: AuditReport = {
     timestamp: new Date().toISOString(),
