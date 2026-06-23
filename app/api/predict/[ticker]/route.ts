@@ -42,7 +42,17 @@ export async function GET(
       stockData.indicators,
       tuningConfig,
       modelVersion as 'V1' | 'V2' | 'V3',
-      timeframe
+      timeframe,
+      undefined, // historicalContext
+      undefined, // calibrationResult
+      undefined, // scaledFeatures
+      'BASELINE', // ablationGroup
+      undefined, // rawFeatures
+      undefined, // tradeFilterThresholds
+      undefined, // ensembleMetrics
+      undefined, // macroContext
+      undefined, // sector
+      stockData.source // dataSource
     );
 
     // Calculate a point forecast predicted_price

@@ -68,7 +68,8 @@ export function generatePrediction(
   tradeFilterThresholds?: TradeFilterThresholds,
   ensembleMetrics?: Record<string, any>,
   macroContext?: MacroContext,
-  sector?: string
+  sector?: string,
+  dataSource?: 'live' | 'cached' | 'mock' | 'fallback'
 ): PredictionResult {
   // ─── 1. Load Base Configurations ───
   let baseConfig = tuningConfig;
@@ -584,17 +585,23 @@ export function generatePrediction(
     aiReasoningSummary = `Ensemble meta-model analysis indicates ${directionText} for ${ticker} over the ${timeframe} horizon. XGBoost: ${(ensembleMetrics.xgbProbability*100).toFixed(0)}%, LightGBM: ${(ensembleMetrics.lgbProbability*100).toFixed(0)}%, RF: ${(ensembleMetrics.rfProbability*100).toFixed(0)}%, LR: ${(ensembleMetrics.lrProbability*100).toFixed(0)}%. Model Agreement Score: ${ensembleMetrics.modelAgreementScore}%.`;
   }
 
-  // ─── 11. Data Quality Gate ───
+  // ─── 11. Data Quality & Source Gate ───
   const dataQuality = validateMarketData(history, price);
-  if (!dataQuality.isReliable) {
+  const isSimulated = dataSource === 'mock' || dataSource === 'fallback';
+  
+  if (!dataQuality.isReliable || isSimulated) {
     confidence = Math.min(confidence, 55);
     riskTier = 'HIGH';
     
-    if (signalStrength === 'STRONG_SIGNAL') {
+    if (signalStrength === 'STRONG_SIGNAL' || signalStrength === 'VERY_STRONG_SIGNAL' as any) {
       signalStrength = 'MODERATE_SIGNAL';
     }
     
-    aiReasoningSummary = `[WARNING: LOW DATA QUALITY - ${dataQuality.warnings[0]}] ` + aiReasoningSummary;
+    if (isSimulated) {
+      aiReasoningSummary = `[WARNING: DEMO/FALLBACK DATA - Predictions are simulated] ` + aiReasoningSummary;
+    } else {
+      aiReasoningSummary = `[WARNING: LOW DATA QUALITY - ${dataQuality.warnings[0]}] ` + aiReasoningSummary;
+    }
   }
 
   const result: PredictionResult = {

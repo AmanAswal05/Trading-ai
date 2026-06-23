@@ -68,12 +68,29 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
   const { convert, symbol, currency } = useCurrency();
   const decimalPlaces = currency === 'JPY' ? 0 : 2;
 
-  const formatConvertedPrice = (val: number) => {
-    return `${symbol}${val.toLocaleString(undefined, {
-      minimumFractionDigits: decimalPlaces,
-      maximumFractionDigits: decimalPlaces,
-    })}`;
-  };
+  // Validate the data integrity before processing
+  const isValidData = useMemo(() => {
+    if (!data || data.length === 0) return false;
+    
+    let previousTime = 0;
+    for (let i = 0; i < data.length; i++) {
+      const d = data[i];
+      // Basic presence checks
+      if (d.open == null || d.high == null || d.low == null || d.close == null || d.date == null) return false;
+      
+      // Impossible candle checks
+      if (d.high < d.low) return false;
+      if (d.close > d.high || d.close < d.low) return false;
+      if (d.open > d.high || d.open < d.low) return false;
+      
+      // Timestamp checks
+      const time = new Date(d.date).getTime();
+      if (isNaN(time)) return false;
+      if (i > 0 && time <= previousTime) return false; // Not sorted or duplicate
+      previousTime = time;
+    }
+    return true;
+  }, [data]);
 
   // Memoize converted data to optimize performance
   const convertedData = useMemo(() => {
@@ -85,6 +102,25 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
       close: convert(d.close),
     }));
   }, [data, convert]);
+
+  if (!isValidData) {
+    return (
+      <div className="w-full h-80 sm:h-96 flex flex-col items-center justify-center border border-dashed border-border-custom bg-bg-secondary/10 rounded-xl text-text-secondary text-sm">
+        <svg className="w-8 h-8 mb-3 text-accent-red/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>Data Validation Failed</span>
+        <span className="text-xs text-text-muted mt-1">Unable to render accurate chart</span>
+      </div>
+    );
+  }
+
+  const formatConvertedPrice = (val: number) => {
+    return `${symbol}${val.toLocaleString(undefined, {
+      minimumFractionDigits: decimalPlaces,
+      maximumFractionDigits: decimalPlaces,
+    })}`;
+  };
+
+
 
   // Find min/max values to fit charts perfectly
   const lows = convertedData.map((d) => d.low);

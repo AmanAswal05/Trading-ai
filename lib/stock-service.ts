@@ -77,6 +77,7 @@ export function generateMockStockData(ticker: string): StockData {
     history: compactHistory,
     indicators,
     dataQuality,
+    source: 'mock',
   };
 }
 
@@ -93,7 +94,11 @@ async function getCachedStockData(cleanTicker: string, cacheTtlMs: number): Prom
     if (cached && !error) {
       const cacheAge = Date.now() - new Date(cached.cached_at).getTime();
       if (cacheAge < cacheTtlMs) {
-        return cached.data as StockData;
+        if (cached?.data) {
+          const stockData = cached.data as StockData;
+          stockData.source = 'cached';
+          return stockData;
+        }
       }
     }
   } catch (err) {
@@ -129,7 +134,9 @@ async function getExpiredCachedStockData(cleanTicker: string): Promise<StockData
       .single();
 
     if (expiredCache?.data) {
-      return expiredCache.data as StockData;
+      const stockData = expiredCache.data as StockData;
+      stockData.source = 'fallback';
+      return stockData;
     }
   } catch (err) {
     console.error('Failed to retrieve expired cache:', err);
@@ -192,6 +199,7 @@ export async function getStockDataInternal(ticker: string): Promise<StockData> {
             history,
             indicators: calculateIndicators(history),
             dataQuality: validateMarketData(history, lastQuote.close),
+            source: 'live',
           };
 
           await cacheStockData(cleanTicker, stockData, 'stock data');

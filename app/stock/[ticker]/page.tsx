@@ -240,6 +240,18 @@ export default function StockAnalysisPage() {
           {/* Main Area: Charts & Predictions (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
             
+            {(stockData.source === 'mock' || stockData.source === 'fallback') && (
+              <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red px-4 py-3 rounded-xl flex items-start gap-3 shadow-sm">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <span className="font-bold block mb-0.5">Demo Mode: Simulated Data Active</span>
+                  <span className="opacity-90 leading-relaxed">
+                    Live market data is currently unavailable. The charts and predictions shown below are using generated simulation data and should not be used for actual trading decisions.
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* AI Prediction Summary */}
             <PredictionCard
               currentPrice={stockData.quote.price}
@@ -253,12 +265,31 @@ export default function StockAnalysisPage() {
                   <h3 className="text-sm font-bold text-text-primary">Historical Chart Patterns</h3>
                   <p className="text-xs text-text-secondary">OHLC price wicks and daily transaction volumes</p>
                 </div>
-                {stockData.dataQuality && !stockData.dataQuality.isReliable && (
-                  <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    Unreliable Data
-                  </div>
-                )}
+                <div className="flex flex-col gap-2 items-end">
+                  {stockData.source === 'live' && (
+                    <div className="bg-accent-green/10 border border-accent-green/20 text-accent-green text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></span>
+                      Live Market Data
+                    </div>
+                  )}
+                  {stockData.source === 'cached' && (
+                    <div className="bg-text-secondary/10 border border-border-custom text-text-secondary text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
+                      Cached Market Data
+                    </div>
+                  )}
+                  {(stockData.source === 'mock' || stockData.source === 'fallback') && (
+                    <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Demo/Fallback Data
+                    </div>
+                  )}
+                  {stockData.dataQuality && !stockData.dataQuality.isReliable && (
+                    <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Unreliable Data
+                    </div>
+                  )}
+                </div>
               </div>
               <CandlestickChart data={stockData.history} />
               <VolumeChart data={stockData.history} />

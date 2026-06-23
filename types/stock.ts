@@ -52,6 +52,7 @@ export interface StockData {
   history: HistoricalQuote[];
   indicators: TechnicalIndicators;
   dataQuality?: import('../lib/data-quality').DataQualityReport;
+  source?: 'live' | 'cached' | 'mock' | 'fallback';
 }
 
 export interface PredictionMetrics {
