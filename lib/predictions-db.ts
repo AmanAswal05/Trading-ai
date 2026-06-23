@@ -367,11 +367,31 @@ export async function auditPredictionSchema(): Promise<void> {
     }
 
     if (missing.length > 0) {
-      // Reset so the next call retries (e.g. after /api/admin/migrate is called).
-      predictionSchemaValidation = null;
+      console.log(`[PredictionsDbService] Detected ${missing.length} missing columns. Attempting auto-migration...`);
       
-      // Clear before adding so we don't retain previously missing columns that are now fixed
-      missingColumns.clear();
+      try {
+        const { error: rpcError } = await supabase.rpc('apply_pending_migrations');
+        if (!rpcError) {
+          console.log(`[PredictionsDbService] Auto-migration succeeded. Re-verifying schema...`);
+          // Re-verify after applying migration
+          const rechecks = await Promise.all(SCHEMA_VALIDATION_FIELDS.map(async field => {
+            const { error } = await supabase.from('predictions').select(field).limit(0);
+            return error ? { field, message: error.message } : null;
+          }));
+          missing = rechecks.filter((check): check is { field: string; message: string } => check !== null);
+        } else {
+          console.warn(`[PredictionsDbService] Auto-migration failed: ${rpcError.message}`);
+        }
+      } catch (e) {
+        console.error(`[PredictionsDbService] Error calling auto-migration:`, e);
+      }
+
+      if (missing.length > 0) {
+        // Reset so the next call retries (e.g. after /api/admin/migrate is called).
+        predictionSchemaValidation = null;
+        
+        // Clear before adding so we don't retain previously missing columns that are now fixed
+        missingColumns.clear();
       
       // Register all currently missing columns so toPredictionDatabaseRow strips them.
       for (const { field } of missing) {
@@ -384,6 +404,7 @@ export async function auditPredictionSchema(): Promise<void> {
         `Click "Fix Schema" in the Admin Console, or run ` +
         `migrations/20260614_apply_pending_migrations_fn.sql in the Supabase SQL editor.`
       );
+    }
     } else {
       // All columns present — clear any previously recorded missing columns.
       missingColumns.clear();
