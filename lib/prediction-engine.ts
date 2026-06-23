@@ -327,48 +327,100 @@ export function generatePrediction(
     let bullishScore = 0;
     let bearishScore = 0;
     
+    let performanceReport: any = null;
+    if (typeof window === 'undefined') {
+      try {
+        const { getFeaturePerformanceReportSync } = require('./feature-performance');
+        if (getFeaturePerformanceReportSync) {
+          performanceReport = getFeaturePerformanceReportSync();
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    const evaluateFeature = (key: string, baseWeight: number, isBullish: boolean) => {
+      let weight = baseWeight;
+      let statusStr = '';
+      let isAltered = false;
+      if (performanceReport && performanceReport.features && performanceReport.features[key]) {
+        const status = performanceReport.features[key].status;
+        if (status === 'BOOSTED') {
+          weight = baseWeight * 1.5;
+          statusStr = ' (Boosted by historical performance)';
+          isAltered = true;
+        } else if (status === 'PENALIZED') {
+          weight = baseWeight * 0.2;
+          statusStr = ' (Penalized by historical performance)';
+          isAltered = true;
+        }
+      }
+
+      if (isBullish) {
+        bullishScore += weight;
+      } else {
+        bearishScore += weight;
+      }
+      return { statusStr, isAltered };
+    };
+
+    let hasAlteredWeights = false;
+
     // Evaluate Trend
     if (safeRawFeatures.trendStrength > 0.6) {
-      bullishScore += 20;
-      featureExplanations.topBullish.push('Strong structural uptrend');
+      const { statusStr, isAltered } = evaluateFeature('trendStrengthBullish', 20, true);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBullish.push(`Strong structural uptrend${statusStr}`);
     } else if (safeRawFeatures.trendStrength < 0.2) {
-      bearishScore += 20;
-      featureExplanations.topBearish.push('Weak or negative structural trend');
+      const { statusStr, isAltered } = evaluateFeature('trendStrengthBearish', 20, false);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBearish.push(`Weak or negative structural trend${statusStr}`);
     }
 
     // Evaluate Alignment
     if (safeRawFeatures.alignmentScore && safeRawFeatures.alignmentScore > 75) {
-      bullishScore += 25;
-      featureExplanations.topBullish.push('Multi-timeframe momentum alignment');
+      const { statusStr, isAltered } = evaluateFeature('alignmentBullish', 25, true);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBullish.push(`Multi-timeframe momentum alignment${statusStr}`);
     } else if (safeRawFeatures.alignmentScore && safeRawFeatures.alignmentScore < 40) {
-      bearishScore += 25;
-      featureExplanations.topBearish.push('Multi-timeframe momentum conflict');
+      const { statusStr, isAltered } = evaluateFeature('alignmentBearish', 25, false);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBearish.push(`Multi-timeframe momentum conflict${statusStr}`);
     }
 
     // Evaluate RSI Divergence
     if (safeRawFeatures.rsiDivergence > 0) {
-      bullishScore += 15;
-      featureExplanations.topBullish.push('Bullish RSI Divergence detected');
+      const { statusStr, isAltered } = evaluateFeature('rsiDivergenceBullish', 15, true);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBullish.push(`Bullish RSI Divergence detected${statusStr}`);
     } else if (safeRawFeatures.rsiDivergence < 0) {
-      bearishScore += 15;
-      featureExplanations.topBearish.push('Bearish RSI Divergence detected');
+      const { statusStr, isAltered } = evaluateFeature('rsiDivergenceBearish', 15, false);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBearish.push(`Bearish RSI Divergence detected${statusStr}`);
     }
 
     // Breakout vs Mean Reversion
     if (safeRawFeatures.breakoutVsMeanReversion > 0) {
-      featureExplanations.topBullish.push('Volatility expansion (Breakout setup)');
-      bullishScore += 10;
+      const { statusStr, isAltered } = evaluateFeature('breakoutContext', 10, true);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBullish.push(`Volatility expansion (Breakout setup)${statusStr}`);
     } else {
       featureExplanations.missingWeak.push('Volatility compression (Choppy/Mean-reverting)');
     }
 
     // Volume Confirmation
     if (safeRawFeatures.volumeConfirmationScore > 0) {
-      bullishScore += 15;
-      featureExplanations.topBullish.push('Upward moves confirmed by volume');
+      const { statusStr, isAltered } = evaluateFeature('volumeConfirmationBullish', 15, true);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBullish.push(`Upward moves confirmed by volume${statusStr}`);
     } else if (safeRawFeatures.volumeConfirmationScore < 0) {
-      bearishScore += 15;
-      featureExplanations.topBearish.push('Downward moves confirmed by volume');
+      const { statusStr, isAltered } = evaluateFeature('volumeConfirmationBearish', 15, false);
+      if (isAltered) hasAlteredWeights = true;
+      featureExplanations.topBearish.push(`Downward moves confirmed by volume${statusStr}`);
+    }
+
+    if (hasAlteredWeights) {
+      (featureExplanations as any).historicalWeightingContext = 'Features weighted dynamically based on verified historical accuracy and sample sizes.';
     }
 
     featureQualityScore = Math.max(0, Math.min(100, 50 + bullishScore - bearishScore));

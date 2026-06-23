@@ -144,6 +144,7 @@ export interface PredictionResult {
     topBearish: string[];
     conflicting: string[];
     missingWeak: string[];
+    historicalWeightingContext?: string;
   };
   insufficientEdge?: boolean;
   tradeFilterScore?: number;
