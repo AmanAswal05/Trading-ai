@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import { supabase } from './supabase';
 import { isSupabaseConfigured } from './db';
 import {

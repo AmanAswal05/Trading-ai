@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';

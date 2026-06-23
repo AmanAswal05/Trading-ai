@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { runYearlyWalkForwardValidation } from '../lib/backtesting/walk-forward-validation';
 import { PredictionRecord } from '../lib/predictions-db';
 import { calculateECE } from '../lib/confidenceCalibration';

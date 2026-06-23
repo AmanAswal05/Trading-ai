@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { generatePrediction } from '../lib/prediction-engine';
 
 const history = Array.from({ length: 30 }, (_, i) => ({

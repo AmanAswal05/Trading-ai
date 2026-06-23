@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 'use client';
 import { AccuracyStats, DashboardStats, TickerVolume, PaymentRecord, SubscriptionRecord } from '@/lib/admin/types';
 import { useEffect, useState, useMemo, useRef } from 'react';

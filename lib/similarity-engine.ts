@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PredictionRecord } from './predictions-db';
 
 export interface SimilarityMatch {

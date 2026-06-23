@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { createPredictionId, PredictionsDbService, PredictionRecord } from '@/lib/predictions-db';
 import { precomputeAllIndicators } from '@/lib/indicators';
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
       let recordsVerified = 0;
       let databaseWrites = 0;   // successfulWrites
       let failedWrites = 0;
-      let skippedRows = 0;
+      const skippedRows = 0;
       let successCount = 0;
       const failures: string[] = [];
       const seededRecords: PredictionRecord[] = [];

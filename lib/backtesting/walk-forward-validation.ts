@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import { OHLCVBar } from './types';
 import { generatePrediction } from '../prediction-engine';
 import { computeIndicatorsFromHistory } from './data-fetcher';

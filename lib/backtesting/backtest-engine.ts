@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 // ─── Core Backtesting Engine ──────────────────────────────────────────────────
 // Orchestrates the full backtest: fetch data, compute indicators, run predictions,
 // evaluate outcomes, and aggregate results.

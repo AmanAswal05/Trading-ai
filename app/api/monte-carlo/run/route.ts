@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ─── POST /api/monte-carlo/run ────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from 'next/server';

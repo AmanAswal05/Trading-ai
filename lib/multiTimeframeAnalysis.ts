@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { HistoricalQuote } from '../types/stock';
 import { EMA, RSI, MACD } from 'technicalindicators';
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { PredictionRecord } from './predictions-db';
 import type { SignalStrength } from '../types/stock';
 

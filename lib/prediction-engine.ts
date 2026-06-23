@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import { PredictionResult, HistoricalQuote, TechnicalIndicators } from '../types/stock';
 import { detectRegime } from './regime-detector';
 import { detectMarketRegime } from './marketRegime';

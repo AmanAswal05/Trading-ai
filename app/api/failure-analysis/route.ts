@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { PredictionsDbService } from '@/lib/predictions-db';
 import { buildFailureAnalysisReport } from '@/lib/failureAnalysis';

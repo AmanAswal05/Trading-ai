@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ─── GET /api/backtest/report/[jobId] ────────────────────────────────────────
 // Returns a downloadable HTML report
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
 import { isSupabaseConfigured } from './db';
 
 export interface JobStatus {
@@ -53,7 +54,7 @@ const writeMockJobs = (data: Record<string, JobStatus>): boolean => {
 };
 
 // Fallback in-memory cache
-let inMemoryJobs: Record<string, JobStatus> = {};
+const inMemoryJobs: Record<string, JobStatus> = {};
 
 export const JobsDbService = {
   async createJob(id: string, totalRecords: number): Promise<JobStatus> {

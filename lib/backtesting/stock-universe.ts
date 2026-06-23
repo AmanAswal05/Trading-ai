@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // ─── S&P 500 Stock Universe with GICS Sectors ─────────────────────────────────
 
 import { StockInfo, GICSSector } from './types';

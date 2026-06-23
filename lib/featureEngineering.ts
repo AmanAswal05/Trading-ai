@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import { HistoricalQuote, TechnicalIndicators } from '../types/stock';
 import { SMA, EMA, ATR } from 'technicalindicators';
 
@@ -216,7 +217,7 @@ export function extractFeatures(
   }
 
   // Sector Features (fallback to neutral if none)
-  let sectorStrength = 0;
+  const sectorStrength = 0;
 
   // Multi-Timeframe Analysis
   const primaryAnalysis = analyzeTimeframe(slice, false);

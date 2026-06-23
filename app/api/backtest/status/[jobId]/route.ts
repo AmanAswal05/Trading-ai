@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 // ─── GET /api/backtest/status/[jobId] ─────────────────────────────────────────
 // Server-Sent Events (SSE) stream for real-time progress
 

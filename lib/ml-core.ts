@@ -92,7 +92,7 @@ export class DecisionTree {
       return { value: this.calculateLeafValue(y) };
     }
 
-    let bestSplit = this.getBestSplit(X, y, numFeatures);
+    const bestSplit = this.getBestSplit(X, y, numFeatures);
 
     if (bestSplit.gain > 0) {
       this.featureImportance[bestSplit.featureIndex] += bestSplit.gain;
@@ -264,7 +264,7 @@ export class GradientBoosting {
     this.featureImportance = new Array(X[0].length).fill(0);
     
     // Initial prediction: 0 log-odds (0.5 prob)
-    let F = new Array(X.length).fill(0);
+    const F = new Array(X.length).fill(0);
 
     for (let i = 0; i < this.numTrees; i++) {
       // Calculate pseudo-residuals (gradients for log loss)

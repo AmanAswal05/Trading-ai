@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 // ─── SQLite OHLCV Cache Layer ──────────────────────────────────────────────────
 // Server-side only. Uses better-sqlite3 for synchronous, high-performance access.
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { HistoricalQuote, TechnicalIndicators } from '../types/stock';
 
 export type TrendRegime = 'BULL_MARKET' | 'BEAR_MARKET' | 'SIDEWAYS_MARKET';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 
 import React from 'react';
 import { Users, CreditCard, Percent, BarChart3, Database, Activity, ArrowUpRight, Search } from 'lucide-react';

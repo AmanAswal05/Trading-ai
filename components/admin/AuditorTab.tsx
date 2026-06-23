@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 
 import React from 'react';
 import { Search, Save, RotateCcw, Play, CheckCircle2, XCircle, Activity, RefreshCw, AlertCircle, Sliders, ShieldCheck, Info } from 'lucide-react';

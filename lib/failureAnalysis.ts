@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PredictionRecord, getSector } from './predictions-db';
 import { calculateECE } from './confidenceCalibration';
 

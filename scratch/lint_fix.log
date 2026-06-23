@@ -1,0 +1,464 @@
+
+> trading-website-analyser@0.1.0 lint
+> eslint --fix
+
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/admin/page.tsx
+    8:10   warning  'BarChart' is defined but never used                                                                                                                        @typescript-eslint/no-unused-vars
+    8:20   warning  'Bar' is defined but never used                                                                                                                             @typescript-eslint/no-unused-vars
+    8:25   warning  'XAxis' is defined but never used                                                                                                                           @typescript-eslint/no-unused-vars
+    8:32   warning  'YAxis' is defined but never used                                                                                                                           @typescript-eslint/no-unused-vars
+    8:39   warning  'CartesianGrid' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+    8:54   warning  'Tooltip' is defined but never used                                                                                                                         @typescript-eslint/no-unused-vars
+    8:63   warning  'ResponsiveContainer' is defined but never used                                                                                                             @typescript-eslint/no-unused-vars
+    8:84   warning  'AreaChart' is defined but never used                                                                                                                       @typescript-eslint/no-unused-vars
+    8:95   warning  'Area' is defined but never used                                                                                                                            @typescript-eslint/no-unused-vars
+    8:101  warning  'LineChart' is defined but never used                                                                                                                       @typescript-eslint/no-unused-vars
+    8:112  warning  'Line' is defined but never used                                                                                                                            @typescript-eslint/no-unused-vars
+   10:3    warning  'Users' is defined but never used                                                                                                                           @typescript-eslint/no-unused-vars
+   10:10   warning  'CreditCard' is defined but never used                                                                                                                      @typescript-eslint/no-unused-vars
+   10:22   warning  'Percent' is defined but never used                                                                                                                         @typescript-eslint/no-unused-vars
+   10:31   warning  'BarChart3' is defined but never used                                                                                                                       @typescript-eslint/no-unused-vars
+   10:55   warning  'ArrowUpRight' is defined but never used                                                                                                                    @typescript-eslint/no-unused-vars
+   11:3    warning  'Search' is defined but never used                                                                                                                          @typescript-eslint/no-unused-vars
+   11:21   warning  'RefreshCw' is defined but never used                                                                                                                       @typescript-eslint/no-unused-vars
+   11:41   warning  'Play' is defined but never used                                                                                                                            @typescript-eslint/no-unused-vars
+   11:47   warning  'Save' is defined but never used                                                                                                                            @typescript-eslint/no-unused-vars
+   11:53   warning  'RotateCcw' is defined but never used                                                                                                                       @typescript-eslint/no-unused-vars
+   12:3    warning  'CheckCircle2' is defined but never used                                                                                                                    @typescript-eslint/no-unused-vars
+   12:17   warning  'XCircle' is defined but never used                                                                                                                         @typescript-eslint/no-unused-vars
+   12:26   warning  'AlertCircle' is defined but never used                                                                                                                     @typescript-eslint/no-unused-vars
+   12:62   warning  'Info' is defined but never used                                                                                                                            @typescript-eslint/no-unused-vars
+   12:68   warning  'Lock' is defined but never used                                                                                                                            @typescript-eslint/no-unused-vars
+   25:9    warning  'router' is assigned a value but never used                                                                                                                 @typescript-eslint/no-unused-vars
+   53:10   warning  'loading' is assigned a value but never used                                                                                                                @typescript-eslint/no-unused-vars
+   76:50   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+   94:50   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  101:68   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  102:50   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  108:10   warning  'schemaStatus' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+  159:14   warning  '_' is defined but never used                                                                                                                               @typescript-eslint/no-unused-vars
+  199:96   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  497:6    warning  React Hook useEffect has missing dependencies: 'loadAccuracyStats', 'loadAdminMetrics', and 'runAudit'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  516:75   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  569:49   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  584:36   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  585:34   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  588:51   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  598:68   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  601:33   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+  614:33   warning  Unexpected any. Specify a different type                                                                                                                    @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/accuracy-stats/route.ts
+  22:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/audit/route.ts
+    4:21  warning  'HistoricalQuote' is defined but never used  @typescript-eslint/no-unused-vars
+   43:25  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  111:17  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/backtest/route.ts
+  147:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  356:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  383:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  401:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/indicator-performance/route.ts
+  35:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/migrate/route.ts
+  116:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/regime-stats/route.ts
+  61:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/run-learning/route.ts
+  80:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  95:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/admin/verify/route.ts
+  140:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/backtest/report/[jobId]/route.ts
+  15:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/backtest/run/route.ts
+   42:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/backtest/status/[jobId]/route.ts
+  35:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:16  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/checkout/route.ts
+  89:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/data-quality/route.ts
+   5:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   7:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  80:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/failure-analysis/route.ts
+  13:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/health/route.ts
+  8:27  warning  'req' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/monte-carlo/run/route.ts
+  43:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/news/[ticker]/route.ts
+   6:23  warning  'title' is defined but never used         @typescript-eslint/no-unused-vars
+  94:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/paywall/check/route.ts
+   55:20  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   92:27  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  153:23  warning  'newSub' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  244:19  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/paywall/log/route.ts
+  45:12  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  73:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/public/trust-stats/route.ts
+  65:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/watchlist/route.ts
+  131:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/api/webhooks/checkout/route.ts
+  111:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/auth/login/page.tsx
+  44:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/auth/signup/page.tsx
+  50:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/backtest/page.tsx
+    6:10  warning  'BacktestConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  100:17  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/dashboard/page.tsx
+  9:8  warning  'LoadingSpinner' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/failure-analysis/page.tsx
+   4:51  warning  'FailureReason' is defined but never used  @typescript-eslint/no-unused-vars
+  88:37  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/onboarding/page.tsx
+   9:43  warning  'Globe' is defined but never used                 @typescript-eslint/no-unused-vars
+  15:11  warning  'theme' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  15:18  warning  'toggleTheme' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  16:11  warning  'currency' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/page.tsx
+    7:10   warning  'useEffect' is defined but never used                            @typescript-eslint/no-unused-vars
+   26:16   warning  'setTape' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+   55:129  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  100:65   warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  100:68   warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  100:73   warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  100:78   warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/stock/[ticker]/page.tsx
+   13:8   warning  'LoadingSpinner' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+   48:6   warning  React Hook useEffect has a missing dependency: 'verifyPaywallAndLoadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  110:19  warning  Unexpected any. Specify a different type                                                                                     @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/trust/page.tsx
+   20:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  247:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  327:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/admin/AccuracyTab.tsx
+    5:10   warning  'AccuracyStats' is defined but never used                        @typescript-eslint/no-unused-vars
+    8:44   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   17:5    warning  'convert' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+   20:62   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   61:50   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   62:47   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  348:95   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  425:50   warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  426:81   warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  434:80   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  460:50   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  460:61   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  499:65   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  499:95   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  542:101  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  562:105  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  663:105  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  696:107  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  723:99   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  749:106  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  769:96   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  770:97   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  771:96   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  772:54   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  801:105  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  847:88   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  848:41   warning  'diff' is assigned a value but never used                        @typescript-eslint/no-unused-vars
+  910:94   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  965:72   warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/admin/AuditorTab.tsx
+    4:10  warning  'AreaChart' is defined but never used                 @typescript-eslint/no-unused-vars
+    4:21  warning  'Area' is defined but never used                      @typescript-eslint/no-unused-vars
+    7:43  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+   10:35  warning  'setTuningConfig' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  170:57  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  214:76  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/admin/BacktestModal.tsx
+  3:10  warning  'Play' is defined but never used          @typescript-eslint/no-unused-vars
+  3:26  warning  'RefreshCw' is defined but never used     @typescript-eslint/no-unused-vars
+  3:37  warning  'XCircle' is defined but never used       @typescript-eslint/no-unused-vars
+  5:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/admin/MetricsTab.tsx
+    3:49  warning  'Database' is defined but never used                   @typescript-eslint/no-unused-vars
+    5:10  warning  'DashboardStats' is defined but never used             @typescript-eslint/no-unused-vars
+    5:26  warning  'TickerVolume' is defined but never used               @typescript-eslint/no-unused-vars
+    5:40  warning  'PaymentRecord' is defined but never used              @typescript-eslint/no-unused-vars
+    5:55  warning  'SubscriptionRecord' is defined but never used         @typescript-eslint/no-unused-vars
+    6:8   warning  'LoadingSpinner' is defined but never used             @typescript-eslint/no-unused-vars
+    8:43  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   12:5   warning  'revenueTrendData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   12:50  warning  'convert' is assigned a value but never used           @typescript-eslint/no-unused-vars
+   12:59  warning  'symbol' is assigned a value but never used            @typescript-eslint/no-unused-vars
+   12:89  warning  'decimalPlaces' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  249:48  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  297:53  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/backtest/ResultsDashboard.tsx
+    4:30  warning  'ModelComparisonRow' is defined but never used    @typescript-eslint/no-unused-vars
+    4:50  warning  'TickerBacktestResult' is defined but never used  @typescript-eslint/no-unused-vars
+    6:35  warning  'RadarChart' is defined but never used            @typescript-eslint/no-unused-vars
+    6:47  warning  'Radar' is defined but never used                 @typescript-eslint/no-unused-vars
+    6:54  warning  'PolarGrid' is defined but never used             @typescript-eslint/no-unused-vars
+    6:65  warning  'PolarAngleAxis' is defined but never used        @typescript-eslint/no-unused-vars
+    7:62  warning  'ReferenceLine' is defined but never used         @typescript-eslint/no-unused-vars
+    7:83  warning  'PieChart' is defined but never used              @typescript-eslint/no-unused-vars
+    7:93  warning  'Pie' is defined but never used                   @typescript-eslint/no-unused-vars
+    7:98  warning  'Legend' is defined but never used                @typescript-eslint/no-unused-vars
+   77:72  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  160:86  warning  '_v' is defined but never used                    @typescript-eslint/no-unused-vars
+  161:90  warning  '_v' is defined but never used                    @typescript-eslint/no-unused-vars
+  162:92  warning  '_v' is defined but never used                    @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/CandlestickChart.tsx
+   21:29  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   22:14  warning  'y' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   22:24  warning  'height' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  125:44  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/IndicatorPanel.tsx
+  176:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  210:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  228:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  253:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/VolumeChart.tsx
+  51:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/stock/PredictionCard.tsx
+   7:23  warning  'TrendingUp' is defined but never used            @typescript-eslint/no-unused-vars
+   7:35  warning  'AlertTriangle' is defined but never used         @typescript-eslint/no-unused-vars
+   7:50  warning  'HelpCircle' is defined but never used            @typescript-eslint/no-unused-vars
+  54:20  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  59:76  warning  'ticker' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  62:11  warning  'formatPrice' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/ConfidenceGauge.tsx
+  12:3  warning  'direction' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/Navbar.tsx
+  11:38  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+  17:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/PaywallModal.tsx
+    6:10  warning  'useTheme' is defined but never used           @typescript-eslint/no-unused-vars
+   22:24  warning  'currency' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  144:19  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/adaptive-weights.ts
+    1:10  warning  'PredictionsDbService' is defined but never used        @typescript-eslint/no-unused-vars
+   91:16  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+   97:14  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+  112:14  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+  163:51  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  176:42  warning  'inactiveIncorrect' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  199:69  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  289:22  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  333:14  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+  334:16  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/admin/types.ts
+  17:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/accuracy-analytics.ts
+  31:9  warning  'directional' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/auto-optimizer.ts
+  86:9  warning  'overallAcc' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/backtest-engine.ts
+   61:38  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  170:70  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  197:16  warning  'err' is defined but never used              @typescript-eslint/no-unused-vars
+  211:3   warning  'predictedReturn' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/data-cache.ts
+    7:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   12:20  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+   97:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  160:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  183:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:82  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  221:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  230:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  234:95  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/data-fetcher.ts
+   51:19  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   65:35  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  168:19  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  176:9   warning  'price' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  280:96  warning  'dPeriod' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/model-comparator.ts
+  91:33  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/report-generator.ts
+  99:9  warning  'timeframeMap' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/stock-universe.ts
+  3:21  warning  'GICSSector' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/backtesting/walk-forward-validation.ts
+    6:72   warning  'ScalerMetadata' is defined but never used   @typescript-eslint/no-unused-vars
+    9:54   warning  'EnsembleMetrics' is defined but never used  @typescript-eslint/no-unused-vars
+   11:46   warning  'MacroContext' is defined but never used     @typescript-eslint/no-unused-vars
+   44:10   warning  'addDays' is defined but never used          @typescript-eslint/no-unused-vars
+   81:68   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  124:18   warning  'e' is defined but never used                @typescript-eslint/no-unused-vars
+  171:105  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  171:149  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  202:34   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  203:39   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  205:107  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  206:46   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  207:48   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  208:33   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  250:45   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  322:17   warning  'e' is defined but never used                @typescript-eslint/no-unused-vars
+  329:18   warning  'e' is defined but never used                @typescript-eslint/no-unused-vars
+  335:61   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  335:105  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  360:37   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  373:34   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  374:39   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  381:39   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  382:46   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  386:48   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  387:33   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/confidenceCalibration.ts
+  324:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/failureAnalysis.ts
+  143:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/featureEngineering.ts
+    1:27  warning  'TechnicalIndicators' is defined but never used  @typescript-eslint/no-unused-vars
+  314:16  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/jobs-db.ts
+   1:10  warning  'isSupabaseConfigured' is defined but never used  @typescript-eslint/no-unused-vars
+  23:16  warning  A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+  29:14  warning  A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+  44:14  warning  A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/marketRegime.ts
+  34:5  warning  'ema50Slope' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/multiTimeframeAnalysis.ts
+  2:20  warning  'MACD' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/prediction-analytics.ts
+  161:80  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/prediction-engine.ts
+   67:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:38  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  202:18  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  203:20  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  359:41  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  460:43  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/predictions-db.ts
+   18:26  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+   26:26  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  323:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  397:16  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  405:14  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  435:14  warning  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  914:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/lib/similarity-engine.ts
+  25:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/scripts/diagnostic3.ts
+   9:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/scripts/run_walk_forward.ts
+    7:87   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    8:30   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:50   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:27   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:59   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:101  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  223:27   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/scripts/step1.ts
+  31:80  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/scripts/step1b.ts
+  27:78  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/scripts/test_api.ts
+   1:10  warning  'NextResponse' is defined but never used       @typescript-eslint/no-unused-vars
+   8:8   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  10:9   warning  'jestMock' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  10:20  warning  A `require()` style import is forbidden        @typescript-eslint/no-require-imports
+  11:24  warning  A `require()` style import is forbidden        @typescript-eslint/no-require-imports
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/scripts/test_fix2.ts
+  9:78  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 315 problems (0 errors, 315 warnings)
+

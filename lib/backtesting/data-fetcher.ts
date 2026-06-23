@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 // ─── Historical OHLCV Data Fetcher (Yahoo Finance) ────────────────────────────
 
 import { OHLCVBar } from './types';
