@@ -12,6 +12,11 @@ import { evaluateTradeability, TradeFilterThresholds, TradeFilterInput } from '.
 import { MacroContext, applySectorMacroSensitivity } from './macroContext';
 import { validateMarketData } from './data-quality';
 
+export const ENGINE_VERSION = '2.1.0';
+export const FEATURE_VERSION = '1.3.0';
+export const CALIBRATION_VERSION = '1.1.0';
+export const REGIME_VERSION = '1.2.0';
+
 export interface TuningConfig {
   weightSma200: number;
   weightSma50: number;
@@ -888,6 +893,10 @@ export function generatePrediction(
     timeframeReliabilityScore: reliabilityDecision?.breakdown.timeframe.accuracy,
     featureQualityScore,
     featureExplanations,
+    engineVersion: ENGINE_VERSION,
+    featureVersion: FEATURE_VERSION,
+    calibrationVersion: CALIBRATION_VERSION,
+    regimeVersion: REGIME_VERSION,
     insufficientEdge: signalStrength === 'NO_SIGNAL',
     safetyModeActive,
     confidenceBreakdown: {

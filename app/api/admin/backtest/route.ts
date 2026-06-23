@@ -273,6 +273,10 @@ export async function POST(request: NextRequest) {
                     timeframe_reliability_score: pred.timeframeReliabilityScore,
                     regime: pred.regime,
                     model_version: model,
+                    engineVersion: pred.engineVersion,
+                    featureVersion: pred.featureVersion,
+                    calibrationVersion: pred.calibrationVersion,
+                    regimeVersion: pred.regimeVersion,
                     status: 'PENDING',
                     created_at: new Date(predictionDateStr).toISOString(),
                     metrics: pred.probabilities ? {

@@ -7,6 +7,13 @@ import {
 import { buildCalibrationCurve } from './confidenceCalibration';
 import { buildIntegrityWarnings } from './data-integrity';
 import { computeDirectionalBrierScore } from './model-evaluation';
+import { 
+  ENGINE_VERSION, 
+  FEATURE_VERSION, 
+  CALIBRATION_VERSION, 
+  REGIME_VERSION 
+} from './prediction-engine';
+
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SUPABASE_BATCH_SIZE = 500;
@@ -127,6 +134,10 @@ export interface PredictionRecord {
   rejection_reasons?: string[];
   volatility_level?: string;
   indicator_setup?: string;
+  engineVersion?: string;
+  featureVersion?: string;
+  calibrationVersion?: string;
+  regimeVersion?: string;
   
   // Walk-forward validation fields
   fold_id?: number;
@@ -218,6 +229,10 @@ interface PredictionDatabaseRow extends Record<string, unknown> {
   trade_filter_score?: number;
   trade_filter_decision?: string;
   rejection_reasons?: string; // Stored as JSONB in DB, passed as string or JSON array
+  engine_version?: string;
+  feature_version?: string;
+  calibration_version?: string;
+  regime_version?: string;
   created_at: string;
 }
 
@@ -235,6 +250,7 @@ export const PREDICTION_SCHEMA_FIELDS: string[] = [
   'ensemble_prob_down', 'final_prob_up', 'final_prob_down',
   'macro_risk_score', 'macro_bias', 'alignment_score', 'timeframe_conflict', 
   'trade_filter_score', 'trade_filter_decision', 'rejection_reasons', 'created_at',
+  'engine_version', 'feature_version', 'calibration_version', 'regime_version'
 ];
 // We check all schema fields now instead of just a subset
 const SCHEMA_VALIDATION_FIELDS = PREDICTION_SCHEMA_FIELDS;
@@ -314,7 +330,11 @@ function toPredictionDatabaseRow(record: PredictionRecord): PredictionDatabaseRo
     trade_filter_score: record.trade_filter_score,
     trade_filter_decision: record.trade_filter_decision,
     rejection_reasons: record.rejection_reasons ? JSON.stringify(record.rejection_reasons) : undefined,
-    created_at: record.created_at,
+    engine_version: record.engineVersion,
+    feature_version: record.featureVersion,
+    calibration_version: record.calibrationVersion,
+    regime_version: record.regimeVersion,
+    created_at: new Date().toISOString(),
   };
 
   // Strip any column that Supabase has told us doesn't exist yet.
@@ -622,6 +642,10 @@ function generateInitialMockPredictions(): PredictionRecord[] {
             regime_confidence: 0.8,
             regime_reason: 'Mock generated',
             regime_adjusted_confidence: confidence_score,
+            engineVersion: ENGINE_VERSION,
+            featureVersion: FEATURE_VERSION,
+            calibrationVersion: CALIBRATION_VERSION,
+            regimeVersion: REGIME_VERSION,
           };
 
           if (isExpired) {

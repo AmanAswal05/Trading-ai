@@ -148,6 +148,10 @@ export interface PredictionResult {
   };
   insufficientEdge?: boolean;
   tradeFilterScore?: number;
+  engineVersion?: string;
+  featureVersion?: string;
+  calibrationVersion?: string;
+  regimeVersion?: string;
   tradeFilterDecision?: string;
   rejectionReasons?: string[];
   macroContext?: {

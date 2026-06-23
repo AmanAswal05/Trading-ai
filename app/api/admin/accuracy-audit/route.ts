@@ -18,7 +18,14 @@ export async function GET(request: NextRequest) {
 
     const report = runAccuracyAudit(verified);
 
-    return NextResponse.json(report);
+    const stalePredictionCount = allPredictions.filter(p => !p.engineVersion).length;
+    const latestPredictionCount = allPredictions.length - stalePredictionCount;
+
+    return NextResponse.json({
+      ...report,
+      stalePredictionCount,
+      latestPredictionCount
+    });
   } catch (err: any) {
     console.error('Failed to run accuracy audit:', err);
     return NextResponse.json({ error: err.message || 'Failed to run accuracy audit.' }, { status: 500 });
