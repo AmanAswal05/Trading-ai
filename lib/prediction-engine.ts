@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import { PredictionResult, HistoricalQuote, TechnicalIndicators } from '../types/stock';
 import { detectRegime } from './regime-detector';
-import { detectMarketRegime } from './marketRegime';
+
 import { applyRegimeMultipliers } from './regime-configs';
 import { createSnapshot, findSimilarSetups } from './similarity-engine';
 import { buildCalibrationCurve, calibrateConfidence } from './confidenceCalibration';
@@ -124,7 +124,6 @@ export function generatePrediction(
 
   // ─── 2. Market Regime Detection & Configurations (Phase 2 & 3) ───
   const regimeClass = detectRegime(indicators, price, { history, volume });
-  const newMarketRegime = detectMarketRegime(indicators, price, { history, volume });
   const regimeSpecificConfig = applyRegimeMultipliers(config, regimeClass.regime);
 
   // ─── 3. Calculate 20-day Average Volume ───
@@ -392,8 +391,7 @@ export function generatePrediction(
           : 0;
 
         const regimeMatches = verifiedPreds.filter((p: Record<string, unknown>) => 
-          p.trend_regime === newMarketRegime.trendRegime && 
-          p.volatility_regime === newMarketRegime.volatilityRegime
+          p.trend_regime === regimeClass.regime
         );
         const regimeAcc = regimeMatches.length > 0
           ? (regimeMatches.filter((p: Record<string, unknown>) => p.prediction_result === 'CORRECT').length / regimeMatches.length) * 100
@@ -423,7 +421,7 @@ export function generatePrediction(
             macd_contribution: macdPct,
             sentiment_contribution: sentimentPct,
             support_resistance_contribution: supportResistancePct,
-            ai_reasoning_summary: `Under the ${newMarketRegime.trendRegime} and ${newMarketRegime.volatilityRegime} regime, the model combines trend, momentum, volatility, and volume evidence.`,
+            ai_reasoning_summary: `Under the ${regimeClass.regime} regime, the model combines trend, momentum, volatility, and volume evidence.`,
           },
           regime: regimeClass.regime,
         });
@@ -453,27 +451,13 @@ export function generatePrediction(
   }
 
   // Final sanity check for bad regimes or very low confidence
-  if (finalConfidence < 55 || newMarketRegime.trendRegime === 'BEAR_MARKET') {
-    signalStrength = 'NO_SIGNAL';
-  } if (newMarketRegime.trendRegime === 'SIDEWAYS_MARKET' && newMarketRegime.volatilityRegime === 'HIGH_VOLATILITY') {
-    // downgrade one level unless historical accuracy proves it works
-    let proven = false;
-    if (typeof window === 'undefined') {
-      try {
-        const { getAllPredictionsSync } = require('./predictions-db');
-        const resolved = historicalContext || (getAllPredictionsSync ? getAllPredictionsSync() : []);
-        const verified = resolved.filter((p: Record<string, unknown>) => p.status === 'VERIFIED');
-        const matches = verified.filter((p: Record<string, unknown>) => p.trend_regime === 'SIDEWAYS_MARKET' && p.volatility_regime === 'HIGH_VOLATILITY');
-        if (matches.length > 5) {
-          const acc = (matches.filter((p: Record<string, unknown>) => p.prediction_result === 'CORRECT').length / matches.length) * 100;
-          if (acc > 55) proven = true;
-        }
-      } catch {}
-    }
-    if (!proven) {
-      if (signalStrength === 'STRONG_SIGNAL') signalStrength = 'MODERATE_SIGNAL';
-      else if (signalStrength === 'MODERATE_SIGNAL') signalStrength = 'WEAK_SIGNAL';
-      else if (signalStrength === 'WEAK_SIGNAL') signalStrength = 'NO_SIGNAL';
+  if (finalConfidence < 55 || regimeClass.regime === 'BEAR_TREND') {
+    signalStrength = 'WEAK_SIGNAL';
+  } else if (regimeClass.regime === 'SIDEWAYS_CHOPPY' && indicators.atr14 / price > 0.04) {
+    if (signalStrength === 'STRONG_SIGNAL' || signalStrength === 'VERY_STRONG_SIGNAL' as any) {
+      signalStrength = 'MODERATE_SIGNAL';
+    } else if (signalStrength === 'MODERATE_SIGNAL') {
+      signalStrength = 'WEAK_SIGNAL';
     }
   }
 
@@ -694,10 +678,8 @@ export function generatePrediction(
       verifiedCount: similarCount,
     } : undefined,
     regime: regimeClass.regime,
-    trendRegime: newMarketRegime.trendRegime,
-    volatilityRegime: newMarketRegime.volatilityRegime,
-    regimeConfidence: newMarketRegime.regimeConfidence,
-    regimeReason: newMarketRegime.regimeReason,
+    regimeConfidence: regimeClass.confidence,
+    regimeReason: regimeClass.reason,
     regimeAdjustedConfidence: finalConfidence,
     signalStrength,
     reliabilityGrade: reliabilityDecision?.reliabilityGrade,
@@ -724,8 +706,8 @@ export function generatePrediction(
     alignmentScore: alignmentScore,
     timeframeConflict: rawFeatures && rawFeatures.timeframeConflict ? true : false,
     marketRegime: {
-      trendRegime: newMarketRegime.trendRegime,
-      volatilityRegime: newMarketRegime.volatilityRegime
+      trendRegime: regimeClass.regime as any,
+      volatilityRegime: regimeClass.secondary_regime as any
     },
     riskScore: riskScore,
     volumeQuality,
@@ -769,8 +751,8 @@ export function generatePrediction(
     if (signalStrength === 'MODERATE_SIGNAL') posSize = 2.5;
     if (signalStrength === 'WEAK_SIGNAL') posSize = 1.0;
     
-    if (newMarketRegime.trendRegime === 'BEAR_MARKET') posSize *= 0.5;
-    if (newMarketRegime.volatilityRegime === 'HIGH_VOLATILITY') posSize *= 0.5;
+    if (regimeClass.regime === 'BEAR_TREND') posSize *= 0.5;
+    if (regimeClass.regime === 'HIGH_VOLATILITY') posSize *= 0.5;
 
     // Throttle dynamically via historical ticker reliability (no hardcoded overrides)
     if (typeof tickerAcc === 'number') {

@@ -98,8 +98,8 @@ export interface PredictionRecord {
   timeframe_reliability_score?: number;
   reliability_warnings?: string[];
   regime?: string;
-  trend_regime?: 'BULL_MARKET' | 'BEAR_MARKET' | 'SIDEWAYS_MARKET';
-  volatility_regime?: 'HIGH_VOLATILITY' | 'NORMAL_VOLATILITY' | 'LOW_VOLATILITY';
+  trend_regime?: string;
+  volatility_regime?: string;
   regime_confidence?: number;
   regime_reason?: string;
   regime_adjusted_confidence?: number;

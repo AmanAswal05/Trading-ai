@@ -8,8 +8,9 @@ import { getAuthenticatedAdmin } from '@/lib/admin-api-auth';
 export const dynamic = 'force-dynamic';
 
 const REGIMES: MarketRegime[] = [
-  'BULL', 'BEAR', 'SIDEWAYS', 'HIGH_VOLATILITY', 'LOW_VOLATILITY', 'TRENDING', 'MEAN_REVERTING',
-];
+    'BULL_TREND', 'BEAR_TREND', 'SIDEWAYS_CHOPPY', 
+    'HIGH_VOLATILITY', 'LOW_LIQUIDITY', 'RECOVERY_REVERSAL'
+  ];
 
 export async function GET(request: NextRequest) {
   const user = await getAuthenticatedAdmin(request);

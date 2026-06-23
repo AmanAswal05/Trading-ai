@@ -9,13 +9,12 @@ export interface RegimeMultipliers {
 }
 
 export const REGIME_MULTIPLIERS: Record<MarketRegime, RegimeMultipliers> = {
-  BULL: { trend: 1.5, momentum: 1.3, volatility: 0.7, volume: 1.0 },
-  BEAR: { trend: 1.0, momentum: 0.5, volatility: 1.5, volume: 1.3 },
-  SIDEWAYS: { trend: 0.5, momentum: 1.5, volatility: 1.5, volume: 0.7 },
+  BULL_TREND: { trend: 1.5, momentum: 1.3, volatility: 0.7, volume: 1.0 },
+  BEAR_TREND: { trend: 1.0, momentum: 0.5, volatility: 1.5, volume: 1.3 },
+  SIDEWAYS_CHOPPY: { trend: 0.5, momentum: 1.5, volatility: 1.5, volume: 0.7 },
   HIGH_VOLATILITY: { trend: 0.5, momentum: 0.5, volatility: 2.0, volume: 1.5 },
-  LOW_VOLATILITY: { trend: 1.5, momentum: 1.3, volatility: 0.3, volume: 0.5 },
-  TRENDING: { trend: 2.0, momentum: 1.0, volatility: 0.5, volume: 1.0 },
-  MEAN_REVERTING: { trend: 0.5, momentum: 2.0, volatility: 1.5, volume: 1.0 },
+  LOW_LIQUIDITY: { trend: 0.5, momentum: 1.0, volatility: 0.5, volume: 2.0 },
+  RECOVERY_REVERSAL: { trend: 0.5, momentum: 2.0, volatility: 1.5, volume: 1.0 },
 };
 
 /**

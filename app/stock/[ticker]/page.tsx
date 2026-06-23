@@ -16,7 +16,7 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import PaywallModal from '@/components/ui/PaywallModal';
 import { StockAnalysisSkeleton } from '@/components/ui/Skeleton';
 import { StockData, PredictionResult, NewsArticle } from '@/types/stock';
-import { ChevronLeft, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, RefreshCw, AlertTriangle, Activity } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function StockAnalysisPage() {
@@ -257,6 +257,30 @@ export default function StockAnalysisPage() {
               currentPrice={stockData.quote.price}
               prediction={prediction}
             />
+
+            {/* Market Regime Card */}
+            {prediction.regime && (
+              <div className="p-5 border border-border-custom bg-bg-card rounded-xl shadow-sm transition-theme flex items-start gap-4">
+                <div className="p-3 bg-accent-blue/10 rounded-lg flex-shrink-0">
+                  <Activity className="w-5 h-5 text-accent-blue" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-text-primary mb-1 flex items-center gap-2">
+                    Market Regime: <span className="text-accent-blue">{prediction.regime.replace(/_/g, ' ')}</span>
+                    {prediction.regimeConfidence && (
+                      <span className="text-xs bg-bg-secondary text-text-secondary px-2 py-0.5 rounded-full border border-border-custom font-normal">
+                        {prediction.regimeConfidence}% Confidence
+                      </span>
+                    )}
+                  </h3>
+                  {prediction.regimeReason && (
+                    <p className="text-xs text-text-secondary leading-relaxed mt-1">
+                      {prediction.regimeReason}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Historical Charts Container */}
             <div className="p-5 border border-border-custom bg-bg-card rounded-xl transition-theme space-y-4 shadow-sm relative overflow-hidden">

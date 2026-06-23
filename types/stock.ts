@@ -124,8 +124,6 @@ export interface PredictionResult {
     verifiedCount: number;
   };
   regime?: string;
-  trendRegime?: 'BULL_MARKET' | 'BEAR_MARKET' | 'SIDEWAYS_MARKET';
-  volatilityRegime?: 'HIGH_VOLATILITY' | 'NORMAL_VOLATILITY' | 'LOW_VOLATILITY';
   regimeConfidence?: number;
   regimeReason?: string;
   regimeAdjustedConfidence?: number;
