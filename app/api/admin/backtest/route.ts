@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     const missingColumns = PredictionsDbService.getMissingColumns();
     if (missingColumns.length > 0) {
       return NextResponse.json(
-        { error: `Missing prediction columns:\n* ${missingColumns.join('\n* ')}\n\nAuto-migration failed (RPC function likely missing). Please run 'migrations/20260623_prediction_missing_columns.sql' or 'migrations/20260614_apply_pending_migrations_fn.sql' in your Supabase SQL Editor.` },
+        { error: `Missing prediction columns:\n* ${missingColumns.join('\n* ')}\n\nAuto-migration failed because RPC function is likely missing.\n\nOpen Supabase → SQL Editor → run migrations/20260623_supabase_manual_fix.sql` },
         { status: 400 }
       );
     }
