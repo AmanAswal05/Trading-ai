@@ -3,6 +3,7 @@ import { ThemeProvider } from '@/lib/theme-context';
 import { CurrencyProvider } from '@/lib/currency-context';
 import Navbar from '@/components/ui/Navbar';
 import PageCover from '@/components/ui/PageCover';
+import ContextualHelp from '@/components/ui/ContextualHelp';
 import './globals.css';
 
 // System fallback font configurations for build stability in offline environments
@@ -26,34 +27,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} data-theme="light" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var stored = localStorage.getItem('sp_theme');
-                  var theme = 'light';
-                  if (stored) {
-                    theme = stored;
-                  } else {
-                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    theme = prefersDark ? 'dark' : 'light';
-                  }
-                  document.documentElement.setAttribute('data-theme', theme);
-                  document.documentElement.style.colorScheme = theme;
-                  if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body className="font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
+      <head />
+      <body className="font-sans antialiased min-h-screen flex flex-col transition-colors duration-200" suppressHydrationWarning>
         <ThemeProvider>
           <CurrencyProvider>
             <PageCover />
@@ -61,6 +36,7 @@ export default function RootLayout({
             <main className="flex-grow">
               {children}
             </main>
+            <ContextualHelp />
           </CurrencyProvider>
         </ThemeProvider>
       </body>

@@ -12,11 +12,11 @@ export async function GET(
   const { jobId } = await params;
 
   const job = getJob(jobId);
-  if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 });
-  if (job.status !== 'COMPLETED') return NextResponse.json({ error: 'Report not ready' }, { status: 202 });
+  if (!job) return NextResponse.json({} as any);
+  if (job.status !== 'COMPLETED') return NextResponse.json({} as any);
 
   const report = getResults(jobId);
-  if (!report) return NextResponse.json({ error: 'Report data missing' }, { status: 404 });
+  if (!report) return NextResponse.json({} as any);
 
   const html = exportReportAsHTML(report);
   const filename = `backtest-report-${jobId.slice(0, 8)}.html`;

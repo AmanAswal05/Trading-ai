@@ -47,7 +47,7 @@ export default function StockAnalysisPage() {
     }
   }, [ticker, router]);
 
-  const verifyPaywallAndLoadData = async () => {
+  async function verifyPaywallAndLoadData() {
     setLoading(true);
     setError(null);
     try {

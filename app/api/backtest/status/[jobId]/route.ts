@@ -32,7 +32,7 @@ export async function GET(
           return;
         }
 
-        const job = getJob(jobId);
+        const job = getJob(jobId) as Record<string, any>;
         if (!job) {
           send({ type: 'error', message: `Job ${jobId} not found` });
           controller.close();

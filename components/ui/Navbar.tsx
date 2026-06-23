@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import ThemeToggle from './ThemeToggle';
 import CurrencySelector from './CurrencySelector';
 import SearchBar from '@/components/dashboard/SearchBar';
+import { isAdminEmail } from '@/lib/admin-auth';
 import { TrendingUp, LogOut, Search, User, X } from 'lucide-react';
 
 export default function Navbar() {
@@ -64,7 +65,10 @@ export default function Navbar() {
 
   // Close mobile search on page navigation
   useEffect(() => {
-    setIsMobileSearchOpen(false);
+    const timer = setTimeout(() => {
+      setIsMobileSearchOpen(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -137,7 +141,7 @@ export default function Navbar() {
 
           {sessionUser ? (
             <div className="flex items-center gap-2">
-              {sessionUser.email && (sessionUser.email.toLowerCase().includes('admin') || sessionUser.email.toLowerCase().endsWith('@stockpredict.ai')) && (
+              {isAdminEmail(sessionUser.email) && (
                 <Link
                   href="/admin"
                   className="flex items-center justify-center h-10 px-4 rounded-xl border border-accent-blue/30 bg-accent-blue/10 hover:bg-accent-blue/15 text-sm font-semibold text-accent-blue transition-theme"

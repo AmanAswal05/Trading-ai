@@ -58,7 +58,7 @@ export async function runBacktest(
 ): Promise<{
   tickerResults: TickerBacktestResult[];
   allRecords: BacktestPredictionRecord[];
-  walkForwardResult?: any;
+  walkForwardResult?: Record<string, any>;
 }> {
   const { startDate, endDate } = getDateRange(config.timeframe);
   const tickers = config.tickers;
@@ -111,8 +111,8 @@ export async function runBacktest(
         const stats = computeTickerStats(ticker, sector, tickerAllRecords);
         tickerResults.push(stats);
       }
-    } catch (err: any) {
-      console.error(`[BacktestEngine] Error processing ${ticker}:`, err.message);
+    } catch (err: unknown) {
+      console.error(`[BacktestEngine] Error processing ${ticker}:`, (err instanceof Error ? err.message : String(err)));
     }
   }
 
@@ -167,7 +167,7 @@ async function runTickerBacktest(
       try {
         const modelVersion = modelToVersion(model);
         const prediction = generatePrediction(
-          ticker, price, volume, bars.slice(0, i + 1), indicators, undefined, modelVersion, config.predictionHorizon
+          ticker, price, volume, bars.slice(0, i + 1), indicators as any, undefined, modelVersion, config.predictionHorizon
         );
 
         // Determine result
@@ -181,6 +181,7 @@ async function runTickerBacktest(
           model,
           direction: prediction.direction,
           confidence: prediction.confidence,
+          signalStrength: prediction.signalStrength,
           predictedReturn,
           actualReturn: round(actualReturn),
           result,
@@ -193,7 +194,7 @@ async function runTickerBacktest(
             atrRatio: indicators.atr14 / price,
           },
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Skip failed predictions
       }
     }
@@ -343,8 +344,8 @@ export async function runStressTests(
           predictionCount: tickerRecords.length,
           resilience,
         });
-      } catch (err: any) {
-        console.error(`[BacktestEngine] Stress test error ${ticker}/${scenarioKey}:`, err.message);
+      } catch (err: unknown) {
+        console.error(`[BacktestEngine] Stress test error ${ticker}/${scenarioKey}:`, (err instanceof Error ? err.message : String(err)));
       }
     }
   }

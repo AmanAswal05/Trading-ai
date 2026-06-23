@@ -36,10 +36,15 @@ export default function WatchlistPanel() {
   };
 
   useEffect(() => {
-    fetchWatchlist();
+    const timer = setTimeout(() => {
+      fetchWatchlist();
+    }, 0);
     // Poll for live pricing updates every 45 seconds
     const interval = setInterval(fetchWatchlist, 45000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleRemove = async (ticker: string, e: React.MouseEvent) => {

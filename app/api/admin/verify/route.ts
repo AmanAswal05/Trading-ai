@@ -1,37 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 import { PredictionsDbService } from '@/lib/predictions-db';
 import { StockData } from '@/types/stock';
+import { getAuthenticatedAdmin } from '@/lib/admin-api-auth';
+import { classifySignalStrength } from '@/lib/prediction-analytics';
 
 export const dynamic = 'force-dynamic';
-
-async function getUser(request: NextRequest) {
-  // Check if we have a mock user cookie in offline/mock mode
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url')) {
-    const mockUserCookie = request.cookies.get('sp_mock_user');
-    if (mockUserCookie) {
-      try {
-        const email = decodeURIComponent(mockUserCookie.value);
-        return { id: 'mock-user-id', email };
-      } catch (e) {
-        console.error('Failed to parse mock user cookie:', e);
-      }
-    }
-  }
-
-  const authHeader = request.headers.get('Authorization');
-  const token = authHeader?.replace('Bearer ', '');
-  if (!token) return null;
-
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return null;
-    return user;
-  } catch (err) {
-    console.error('Verify route auth error:', err);
-    return null;
-  }
-}
 
 function getTimeframeDays(timeframe: string): number {
   if (timeframe === '1D') return 1;
@@ -43,10 +16,9 @@ function getTimeframeDays(timeframe: string): number {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getUser(request);
+  const user = await getAuthenticatedAdmin(request);
 
-  // Secure: Admin-only check
-  if (!user || !user.email || !(user.email.toLowerCase().includes('admin') || user.email.toLowerCase().endsWith('@stockpredict.ai'))) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
   }
 
@@ -155,6 +127,7 @@ export async function POST(request: NextRequest) {
           actual: actualDirection,
           result: result,
           errorPct: errorPercentage,
+          signalStrength: classifySignalStrength(pred.confidence_score),
         });
       }
     }

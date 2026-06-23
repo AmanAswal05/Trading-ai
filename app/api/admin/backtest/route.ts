@@ -1,39 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { PredictionsDbService, PredictionRecord } from '@/lib/predictions-db';
+import { createPredictionId, PredictionsDbService, PredictionRecord } from '@/lib/predictions-db';
 import { precomputeAllIndicators } from '@/lib/indicators';
 import { generatePrediction } from '@/lib/prediction-engine';
-import { getStockDataInternal } from '@/app/api/stock/[ticker]/route';
+import { getStockDataInternal } from '@/lib/stock-service';
 import { JobsDbService } from '@/lib/jobs-db';
+import { getAuthenticatedAdmin } from '@/lib/admin-api-auth';
 
 export const dynamic = 'force-dynamic';
 
-async function getUser(request: NextRequest) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url')) {
-    const mockUserCookie = request.cookies.get('sp_mock_user');
-    if (mockUserCookie) {
-      try {
-        const email = decodeURIComponent(mockUserCookie.value);
-        return { id: 'mock-user-id', email };
-      } catch (e) {
-        console.error('Failed to parse mock user cookie:', e);
-      }
-    }
-  }
-
-  const authHeader = request.headers.get('Authorization');
-  const token = authHeader?.replace('Bearer ', '');
-  if (!token) return null;
-
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return null;
-    return user;
-  } catch (err) {
-    console.error('Backtest route auth error:', err);
-    return null;
-  }
-}
+const MAX_PREDICTIONS_PER_RUN = 100_000;
+const PREDICTION_FLUSH_BATCH_SIZE = 500;
+const PREDICTIONS_PER_SIMULATION_DATE = 15; // 5 timeframes * 3 models
+const ALLOWED_PREDICTION_BATCH_SIZES = new Set([100, 1_000, 10_000, MAX_PREDICTIONS_PER_RUN]);
 
 function getTimeframeDays(timeframe: string): number {
   if (timeframe === '1D') return 1;
@@ -46,8 +24,8 @@ function getTimeframeDays(timeframe: string): number {
 
 // GET handler to poll job status
 export async function GET(request: NextRequest) {
-  const user = await getUser(request);
-  if (!user || !user.email || !(user.email.toLowerCase().includes('admin') || user.email.toLowerCase().endsWith('@stockpredict.ai'))) {
+  const user = await getAuthenticatedAdmin(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
   }
 
@@ -68,9 +46,9 @@ export async function GET(request: NextRequest) {
 
 // POST handler to trigger backtest seeder job
 export async function POST(request: NextRequest) {
-  const user = await getUser(request);
+  const user = await getAuthenticatedAdmin(request);
 
-  if (!user || !user.email || !(user.email.toLowerCase().includes('admin') || user.email.toLowerCase().endsWith('@stockpredict.ai'))) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
   }
 
@@ -87,7 +65,29 @@ export async function POST(request: NextRequest) {
     }
 
     const tickers = body.tickers || ['AAPL', 'MSFT', 'TSLA', 'RELIANCE.BSE'];
-    const simulationDatesCount = body.simulationDatesCount || 12;
+    const batchSize = Number(body.batchSize ?? body.batch_size ?? 10_000);
+    if (!Number.isInteger(batchSize) || !ALLOWED_PREDICTION_BATCH_SIZES.has(batchSize)) {
+      return NextResponse.json(
+        { error: 'Invalid batch size. Choose 100, 1,000, 10,000, or 100,000.' },
+        { status: 400 }
+      );
+    }
+
+    // Request enough historical dates to approach the selected prediction count.
+    const simulationDatesCount = Math.max(
+      1,
+      Math.ceil(batchSize / (Math.max(1, tickers.length) * PREDICTIONS_PER_SIMULATION_DATE))
+    );
+    const maxPredictions = batchSize;
+
+    await PredictionsDbService.assertPredictionSchema();
+    const missingColumns = PredictionsDbService.getMissingColumns();
+    if (missingColumns.length > 0) {
+      return NextResponse.json(
+        { error: `Missing prediction columns:\n* ${missingColumns.join('\n* ')}\n\nPlease run migrations / Fix Schema.` },
+        { status: 400 }
+      );
+    }
 
     // Pre-calculate exact prediction counts by loading stock data internally (instant in mock mode)
     let totalPredictionsCount = 0;
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
           for (let dIndex = 20; dIndex < L - 2; dIndex += step) {
             datesCount++;
           }
-          const predCount = datesCount * 15; // 5 timeframes * 3 models
+          const predCount = datesCount * PREDICTIONS_PER_SIMULATION_DATE;
           totalPredictionsCount += predCount;
           tickerInfoList.push({ ticker, history, step, predCount });
         }
@@ -118,22 +118,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No valid tickers or history data found to process.' }, { status: 400 });
     }
 
+    const cappedTotalPredictions = Math.min(totalPredictionsCount, maxPredictions);
+
     const jobId = 'job-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now();
-    await JobsDbService.createJob(jobId, totalPredictionsCount);
+    await JobsDbService.createJob(jobId, cappedTotalPredictions);
 
     // Trigger asynchronous background execution
     (async () => {
-      let recordsProcessed = 0;
+      let recordsProcessed = 0; // attempted rows
       let recordsVerified = 0;
-      let databaseWrites = 0;
+      let databaseWrites = 0;   // successfulWrites
+      let failedWrites = 0;
+      let skippedRows = 0;
       let successCount = 0;
       const failures: string[] = [];
       const seededRecords: PredictionRecord[] = [];
+      let generatedRecords = 0;
+      let stopProcessing = false;
+
+      const flushSeededRecords = async () => {
+        if (seededRecords.length === 0) {
+          return;
+        }
+
+        try {
+          await PredictionsDbService.seedMockPredictions([...seededRecords]);
+          databaseWrites += seededRecords.length;
+        } catch (e: any) {
+          failedWrites += seededRecords.length;
+          console.error('[Seeder] DB write batch failed:', e.message);
+          failures.push(`Batch write failed: ${e.message}`);
+        }
+        seededRecords.length = 0;
+      };
 
       try {
         await JobsDbService.updateJobProgress(jobId, { status: 'RUNNING' });
 
         for (const { ticker, history, step } of tickerInfoList) {
+          if (stopProcessing) {
+            break;
+          }
+
           // Check cancellation
           let currentJob = await JobsDbService.getJobStatus(jobId);
           if (currentJob?.status === 'CANCELLED') {
@@ -145,6 +171,10 @@ export async function POST(request: NextRequest) {
             const allIndicators = precomputeAllIndicators(history);
 
             for (let dIndex = 20; dIndex < L - 2; dIndex += step) {
+              if (stopProcessing) {
+                break;
+              }
+
               // Check cancellation inside loop
               currentJob = await JobsDbService.getJobStatus(jobId);
               if (currentJob?.status === 'CANCELLED') {
@@ -160,6 +190,10 @@ export async function POST(request: NextRequest) {
               const models: ('V1' | 'V2' | 'V3')[] = ['V1', 'V2', 'V3'];
 
               for (const timeframe of timeframes) {
+                if (stopProcessing) {
+                  break;
+                }
+
                 const days = getTimeframeDays(timeframe);
                 
                 // Find actual future quote in history closest to target date
@@ -182,6 +216,11 @@ export async function POST(request: NextRequest) {
                 const hasOutcome = closestQuote && minDiff <= 7 * 24 * 60 * 60 * 1000;
 
                 for (const model of models) {
+                  if (generatedRecords >= maxPredictions) {
+                    stopProcessing = true;
+                    break;
+                  }
+
                   const pred = generatePrediction(
                     ticker,
                     currentPrice,
@@ -207,7 +246,7 @@ export async function POST(request: NextRequest) {
                   predictedPrice = Number(predictedPrice.toFixed(2));
 
                   const record: PredictionRecord = {
-                    id: Math.random().toString(36).substring(2, 15) + '-' + Date.now(),
+                    id: createPredictionId(),
                     user_id: 'mock-user-id',
                     ticker,
                     prediction_date: new Date(predictionDateStr).toISOString(),
@@ -216,6 +255,22 @@ export async function POST(request: NextRequest) {
                     predicted_price: predictedPrice,
                     predicted_direction: pred.direction,
                     confidence_score: pred.confidence,
+                    confidence_before_filter: pred.confidenceBeforeFilter,
+                    confidence_after_filter: pred.confidenceAfterFilter ?? pred.confidence,
+                    signal_strength: pred.signalStrength,
+                    signal_quality: pred.signalQuality,
+                    filter_reason: pred.filterReason,
+                    is_tradeable_signal: pred.isTradeableSignal,
+                    max_position_size: pred.maxPositionSize,
+                    calibrated_prob_up: pred.direction === 'UP'
+                      ? pred.confidence / 100
+                      : pred.direction === 'DOWN'
+                        ? 1 - pred.confidence / 100
+                        : 0.5,
+                    reliability_grade: pred.reliabilityGrade,
+                    stock_reliability_score: pred.stockReliabilityScore,
+                    timeframe_reliability_score: pred.timeframeReliabilityScore,
+                    regime: pred.regime,
                     model_version: model,
                     status: 'PENDING',
                     created_at: new Date(predictionDateStr).toISOString(),
@@ -278,15 +333,23 @@ export async function POST(request: NextRequest) {
 
                   seededRecords.push(record);
                   recordsProcessed++;
+                  generatedRecords++;
+
+                  if (seededRecords.length >= PREDICTION_FLUSH_BATCH_SIZE) {
+                    await flushSeededRecords();
+                  }
                 }
               }
 
               // Update progress periodically (every simulation date)
-              const currentProgress = Math.min(99, Math.round((recordsProcessed / totalPredictionsCount) * 100));
+              const currentProgress = Math.min(99, Math.round((recordsProcessed / cappedTotalPredictions) * 100));
               await JobsDbService.updateJobProgress(jobId, {
                 progress: currentProgress,
                 recordsProcessed,
                 recordsVerified,
+                databaseWrites,
+                failedWrites,
+                skippedRows,
                 successRate: recordsVerified > 0 ? Math.round((successCount / recordsVerified) * 100) : 0,
               });
             }
@@ -302,10 +365,7 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        if (seededRecords.length > 0) {
-          await PredictionsDbService.seedMockPredictions(seededRecords);
-          databaseWrites = seededRecords.length;
-        }
+        await flushSeededRecords();
 
         const successRate = recordsVerified > 0 ? Math.round((successCount / recordsVerified) * 100) : 0;
         await JobsDbService.updateJobProgress(jobId, {
@@ -314,6 +374,8 @@ export async function POST(request: NextRequest) {
           recordsProcessed,
           recordsVerified,
           databaseWrites,
+          failedWrites,
+          skippedRows,
           successRate,
           failures,
         });
@@ -332,7 +394,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       jobId,
       status: 'QUEUED',
-      totalRecords: totalPredictionsCount,
+      totalRecords: cappedTotalPredictions,
       message: 'Backtest seeder running in background.',
     }, { status: 202 });
 

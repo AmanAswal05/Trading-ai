@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { isAdminEmail } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
   // 1. Authenticated User flow
   if (user) {
     // Check if user is an admin - skip tracking logs
-    if (user.email && (user.email.toLowerCase().includes('admin') || user.email.toLowerCase().endsWith('@stockpredict.ai'))) {
+    if (isAdminEmail(user.email)) {
       return NextResponse.json({ success: true, logged: false, mode: 'admin', reason: 'admin_bypass' });
     }
 

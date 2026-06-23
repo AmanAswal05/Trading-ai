@@ -7,7 +7,9 @@ export interface JobStatus {
   recordsProcessed: number;
   totalRecords: number;
   recordsVerified: number;
-  databaseWrites: number;
+  databaseWrites: number; // successfulWrites
+  failedWrites?: number;
+  skippedRows?: number;
   successRate: number;
   executionTime: number; // in ms
   startedAt: string;

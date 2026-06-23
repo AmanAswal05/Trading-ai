@@ -95,7 +95,7 @@ function runMomentumEngine(indicators: TechnicalIndicators): EngineOutput {
 
 // 3. Volatility Engine (Weight: 0.15)
 function runVolatilityEngine(indicators: TechnicalIndicators, price: number): EngineOutput {
-  const { bollingerUpper, bollingerMiddle, bollingerLower, atr14 } = indicators;
+  const { bollingerUpper, bollingerMiddle, bollingerLower } = indicators;
 
   const bbandRange = bollingerUpper - bollingerLower;
   const pctB = bbandRange > 0 ? (price - bollingerLower) / bbandRange : 0.5;
@@ -204,8 +204,8 @@ export function runMetaModel(
     totalWeight += eng.weight;
   }
 
-  let bullish = Math.round(weightedBullish / totalWeight);
-  let bearish = Math.round(weightedBearish / totalWeight);
+  const bullish = Math.round(weightedBullish / totalWeight);
+  const bearish = Math.round(weightedBearish / totalWeight);
   let neutral = Math.round(weightedNeutral / totalWeight);
 
   // Normalize to 100
@@ -215,16 +215,27 @@ export function runMetaModel(
     neutral += diff; // adjust neutral slightly
   }
 
-  // Determine final direction and confidence
+  // Determine final direction and confidence.
+  // Use the spread between the top and second-best probabilities so the model
+  // only looks confident when the ensemble meaningfully separates one direction.
   let finalDirection: 'UP' | 'DOWN' | 'NEUTRAL' = 'NEUTRAL';
-  let finalConfidence = neutral;
+  const ordered = [
+    { dir: 'UP' as const, value: bullish },
+    { dir: 'DOWN' as const, value: bearish },
+    { dir: 'NEUTRAL' as const, value: neutral },
+  ].sort((a, b) => b.value - a.value);
 
-  if (bullish > bearish && bullish > neutral) {
-    finalDirection = 'UP';
-    finalConfidence = bullish;
-  } else if (bearish > bullish && bearish > neutral) {
-    finalDirection = 'DOWN';
-    finalConfidence = bearish;
+  const top = ordered[0];
+  const second = ordered[1];
+  const directionalEdge = Math.max(0, top.value - second.value);
+  let finalConfidence = top.value;
+
+  if (top.dir !== 'NEUTRAL' && directionalEdge >= 6) {
+    finalDirection = top.dir;
+    finalConfidence = Math.round(top.value * 0.7 + directionalEdge * 3);
+  } else {
+    finalDirection = 'NEUTRAL';
+    finalConfidence = neutral;
   }
 
   // Agreement Score (how many engines align on direction)
@@ -246,6 +257,16 @@ export function runMetaModel(
   const volRisk = Math.min(10, Math.max(1, Math.round(atrRatio * 100 * 3.5)));
   const consensusRisk = Math.round((100 - agreementScore) / 10);
   const riskScore = Math.min(10, Math.max(1, Math.round(volRisk * 0.6 + consensusRisk * 0.4)));
+
+  // Reduce confidence when the engines do not strongly agree.
+  if (finalDirection !== 'NEUTRAL') {
+    if (agreementScore < 40) {
+      finalDirection = 'NEUTRAL';
+      finalConfidence = neutral;
+    } else if (agreementScore < 60) {
+      finalConfidence = Math.max(0, Math.round(finalConfidence * 0.8));
+    }
+  }
 
   return {
     engines,

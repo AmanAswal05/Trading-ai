@@ -1,0 +1,267 @@
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/mpl.js
+  Line 60:9 - Unexpected aliasing of 'this' to local variable. (@typescript-eslint/no-this-alias)
+  Line 114:9 - Unexpected aliasing of 'this' to local variable. (@typescript-eslint/no-this-alias)
+  Line 351:9 - Unexpected aliasing of 'this' to local variable. (@typescript-eslint/no-this-alias)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/nbagg_mpl.js
+  Line 113:9 - Unexpected aliasing of 'this' to local variable. (@typescript-eslint/no-this-alias)
+  Line 122:9 - Unexpected aliasing of 'this' to local variable. (@typescript-eslint/no-this-alias)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/admin/page.tsx
+  Line 455:17 - Error: Cannot access variable before it is declared
+
+`loadAdminMetrics` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/admin/page.tsx:455:17
+  453 |           }
+  454 |           
+> 455 |           await loadAdminMetrics();
+      |                 ^^^^^^^^^^^^^^^^ `loadAdminMetrics` accessed before it is declared
+  456 |           await runAudit(savedTuning ? JSON.parse(savedTuning) : DEFAULT_TUNING_CONFIG);
+  457 |           await loadAccuracyStats('ALL');
+  458 |           await loadIndicatorPerformance();
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/admin/page.tsx:501:3
+  499 |   }, [auditResult, convert]);
+  500 |
+> 501 |   const loadAdminMetrics = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 502 |     setLoading(true);
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 503 |     const hasSupabase = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 625 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 626 |   };
+      | ^^^^^ `loadAdminMetrics` is declared here
+  627 |
+  628 |   const loadMockMetrics = () => {
+  629 |     setIsMockMode(true); (react-hooks/immutability)
+  Line 456:17 - Error: Cannot access variable before it is declared
+
+`runAudit` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/admin/page.tsx:456:17
+  454 |           
+  455 |           await loadAdminMetrics();
+> 456 |           await runAudit(savedTuning ? JSON.parse(savedTuning) : DEFAULT_TUNING_CONFIG);
+      |                 ^^^^^^^^ `runAudit` accessed before it is declared
+  457 |           await loadAccuracyStats('ALL');
+  458 |           await loadIndicatorPerformance();
+  459 |           await loadRegimeStats();
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/admin/page.tsx:666:3
+  664 |
+  665 |   // Run AI accuracy audit
+> 666 |   const runAudit = async (customConfig?: TuningConfig) => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 667 |     setLoadingAudit(true);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 668 |     setAuditError('');
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 701 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 702 |   };
+      | ^^^^^ `runAudit` is declared here
+  703 |
+  704 |   // Handle tuning sliders modifications
+  705 |   const handleSliderChange = (key: keyof TuningConfig, val: number) => { (react-hooks/immutability)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/stock/[ticker]/page.tsx
+  Line 46:7 - Error: Cannot access variable before it is declared
+
+`verifyPaywallAndLoadData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/stock/[ticker]/page.tsx:46:7
+  44 |
+  45 |     if (ticker) {
+> 46 |       verifyPaywallAndLoadData();
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^ `verifyPaywallAndLoadData` accessed before it is declared
+  47 |     }
+  48 |   }, [ticker, router]);
+  49 |
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/app/stock/[ticker]/page.tsx:50:3
+   48 |   }, [ticker, router]);
+   49 |
+>  50 |   const verifyPaywallAndLoadData = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  51 |     setLoading(true);
+      | ^^^^^^^^^^^^^^^^^^^^^
+>  52 |     setError(null);
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 115 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 116 |   };
+      | ^^^^^ `verifyPaywallAndLoadData` is declared here
+  117 |
+  118 |   const saveToRecentSearches = (symbol: string) => {
+  119 |     try { (react-hooks/immutability)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/CandlestickChart.tsx
+  Line 149:30 - Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/CandlestickChart.tsx:149:30
+  147 |             axisLine={false}
+  148 |           />
+> 149 |           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--bg-card-hover)', opacity: 0.1 }} />
+      |                              ^^^^^^^^^^^^^ This component is created during render
+  150 |           {/* We pass a dummy dataKey, but our shape uses the full payload details */}
+  151 |           <Bar dataKey="close" fill="transparent" shape={<Candlestick />} />
+  152 |         </ComposedChart>
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/CandlestickChart.tsx:89:25
+   87 |
+   88 |   // Custom tooltips showing all OHLC parameters in the active currency format
+>  89 |   const CustomTooltip = ({ active, payload }: any) => {
+      |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  90 |     if (active && payload && payload.length > 0) {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  91 |       const item: HistoricalQuote = payload[0].payload;
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 110 |     return null;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 111 |   };
+      | ^^^^ The component is created during render here
+  112 |
+  113 |   // Find min/max values to fit charts perfectly
+  114 |   const lows = convertedData.map((d) => d.low); (react-hooks/static-components)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/VolumeChart.tsx
+  Line 70:30 - Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/VolumeChart.tsx:70:30
+  68 |             axisLine={false}
+  69 |           />
+> 70 |           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--bg-card-hover)', opacity: 0.1 }} />
+     |                              ^^^^^^^^^^^^^ This component is created during render
+  71 |           <Bar dataKey="volume">
+  72 |             {data.map((entry, index) => {
+  73 |               const isUp = entry.close >= entry.open;
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/charts/VolumeChart.tsx:22:25
+  20 | export default function VolumeChart({ data }: VolumeChartProps) {
+  21 |   // Custom tooltips showing raw volume and pricing direction
+> 22 |   const CustomTooltip = ({ active, payload }: any) => {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |     if (active && payload && payload.length > 0) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 24 |       const item: HistoricalQuote = payload[0].payload;
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 38 |     return null;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 39 |   };
+     | ^^^^ The component is created during render here
+  40 |
+  41 |   return (
+  42 |     <div className="w-full h-32 sm:h-36"> (react-hooks/static-components)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/dashboard/SearchBar.tsx
+  Line 43:7 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/dashboard/SearchBar.tsx:43:7
+  41 |     // Filter suggestions based on query
+  42 |     if (query.trim() === '') {
+> 43 |       setSuggestions(popularTickers);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |     } else {
+  45 |       const filtered = popularTickers.filter(
+  46 |         (t) => (react-hooks/set-state-in-effect)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/dashboard/WatchlistPanel.tsx
+  Line 39:5 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/dashboard/WatchlistPanel.tsx:39:5
+  37 |
+  38 |   useEffect(() => {
+> 39 |     fetchWatchlist();
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |     // Poll for live pricing updates every 45 seconds
+  41 |     const interval = setInterval(fetchWatchlist, 45000);
+  42 |     return () => clearInterval(interval); (react-hooks/set-state-in-effect)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/Navbar.tsx
+  Line 68:5 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/Navbar.tsx:68:5
+  66 |   // Close mobile search on page navigation
+  67 |   useEffect(() => {
+> 68 |     setIsMobileSearchOpen(false);
+     |     ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |   }, [pathname]);
+  70 |
+  71 |   const handleLogout = async () => { (react-hooks/set-state-in-effect)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/PageCover.tsx
+  Line 12:5 - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/PageCover.tsx:12:5
+  10 |
+  11 |   useEffect(() => {
+> 12 |     setVisible(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |     setAnimating(true);
+  14 |
+  15 |     const startFade = setTimeout(() => { (react-hooks/set-state-in-effect)
+
+File: /Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/PaywallModal.tsx
+  Line 121:40 - Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/PaywallModal.tsx:121:40
+  119 |             payment_provider: 'MockGateway',
+  120 |             status: 'Success',
+> 121 |             transaction_id: `mock_tx_${Date.now()}`,
+      |                                        ^^^^^^^^^^ Cannot call impure function
+  122 |           });
+  123 |         } else {
+  124 |           // LocalStorage fallback for completely unauthenticated guests (react-hooks/purity)
+  Line 136:9 - Error: This value cannot be modified
+
+Modifying a variable defined outside a component or hook is not allowed. Consider using an effect.
+
+/Users/amanaswal/Desktop/P9-Trading website analyser/Trading website analyser/components/ui/PaywallModal.tsx:136:9
+  134 |       // If Razorpay/Stripe checkout URL is provided
+  135 |       if (data.checkoutUrl) {
+> 136 |         window.location.href = data.checkoutUrl;
+      |         ^^^^^^^^^^^^^^^ value cannot be modified
+  137 |       } else {
+  138 |         throw new Error('No checkout endpoint resolved.');
+  139 |       } (react-hooks/immutability)
+
+Total errors found: 16

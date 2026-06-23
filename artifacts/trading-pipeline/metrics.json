@@ -1,0 +1,177 @@
+{
+  "input_path": "lib/mock-predictions-db.json",
+  "rows": 12183,
+  "prediction_batch_size": 100000,
+  "verified_rows": 12183,
+  "targets": {
+    "verified_accuracy": 0.55,
+    "tradeable_accuracy": 0.58,
+    "win_loss_ratio": 1.3,
+    "median_absolute_error": 0.015
+  },
+  "feature_columns": {
+    "numeric": [
+      "predicted_price",
+      "confidence_score",
+      "ma30",
+      "ma90",
+      "vol30",
+      "market_return_lag1",
+      "market_breadth_lag1",
+      "asset_return_1d",
+      "peer_return_lag1",
+      "relative_to_market_lag1",
+      "return_7d_lag1",
+      "volatility_7d_lag1",
+      "return_30d_lag1",
+      "volatility_30d_lag1",
+      "return_90d_lag1",
+      "volatility_90d_lag1",
+      "peer_momentum_7d",
+      "peer_momentum_30d",
+      "peer_momentum_90d",
+      "volatility_7d_lag1_x_bear",
+      "volatility_30d_lag1_x_bear",
+      "volatility_90d_lag1_x_bear",
+      "peer_momentum_7d_x_bear",
+      "peer_momentum_30d_x_bear",
+      "peer_momentum_90d_x_bear",
+      "volatility_7d_lag1_x_bull",
+      "volatility_30d_lag1_x_bull",
+      "volatility_90d_lag1_x_bull",
+      "peer_momentum_7d_x_bull",
+      "peer_momentum_30d_x_bull",
+      "peer_momentum_90d_x_bull",
+      "volatility_7d_lag1_x_sideways",
+      "volatility_30d_lag1_x_sideways",
+      "volatility_90d_lag1_x_sideways",
+      "peer_momentum_7d_x_sideways",
+      "peer_momentum_30d_x_sideways",
+      "peer_momentum_90d_x_sideways",
+      "timeframe_days"
+    ],
+    "categorical": [
+      "ticker",
+      "timeframe",
+      "market_regime"
+    ]
+  },
+  "final_ensemble_weights": {
+    "logistic": 0.3418306653759014,
+    "temporal_neural": 0.3138070330641973,
+    "gradient_boosting": 0.3443623015599013
+  },
+  "fold_summary": {
+    "verified_accuracy": 0.5743842364532019,
+    "tradeable_accuracy": 0.6817038737912996,
+    "win_loss_ratio": 4.577346540221437,
+    "median_absolute_error": 0.018389447619527755,
+    "sharpe_ratio": 10.356980078055074,
+    "max_drawdown": 0.32543550608428556,
+    "brier_score": 0.2428665245298321,
+    "expected_calibration_error": 0.06606419332431722
+  },
+  "overall_metrics": {
+    "verified_accuracy": 0.574384236453202,
+    "median_absolute_error": 0.01815622398005099,
+    "brier_score": 0.2428665245298321,
+    "expected_calibration_error": 0.0342559819045576,
+    "original_brier_score": 0.32433959605911333,
+    "original_expected_calibration_error": 0.2236206896551724,
+    "tradeable_accuracy": 0.6146224803553126,
+    "tradeable_count": 2927,
+    "win_loss_ratio": 2.116832393956065,
+    "sharpe_ratio": 4.772788779700075,
+    "max_drawdown": 0.5148659605056778
+  },
+  "monitoring": {
+    "recalibration_recommended": false,
+    "drawdown_warning": true,
+    "minimum_tradeable_sample_size": 50
+  },
+  "targets_achieved": {
+    "verified_accuracy": true,
+    "tradeable_accuracy": true,
+    "win_loss_ratio": true,
+    "median_absolute_error": false
+  },
+  "fold_metrics": [
+    {
+      "fold": 1,
+      "test_size": 2030,
+      "verified_accuracy": 0.6231527093596059,
+      "tradeable_accuracy": 1.0,
+      "tradeable_count": 18,
+      "win_loss_ratio": Infinity,
+      "median_absolute_error": 0.020984373047758652,
+      "sharpe_ratio": 33.95982780974981,
+      "max_drawdown": 0.0,
+      "brier_score": 0.22989599115676573,
+      "expected_calibration_error": 0.050511885840025555
+    },
+    {
+      "fold": 2,
+      "test_size": 2030,
+      "verified_accuracy": 0.6275862068965518,
+      "tradeable_accuracy": 0.7114882506527415,
+      "tradeable_count": 766,
+      "win_loss_ratio": 15.231005229818551,
+      "median_absolute_error": 0.016382147996510596,
+      "sharpe_ratio": 8.308965139367222,
+      "max_drawdown": 0.25434263640587107,
+      "brier_score": 0.235344873221766,
+      "expected_calibration_error": 0.0506934770751567
+    },
+    {
+      "fold": 3,
+      "test_size": 2030,
+      "verified_accuracy": 0.5822660098522168,
+      "tradeable_accuracy": 0.555952380952381,
+      "tradeable_count": 840,
+      "win_loss_ratio": 1.4876234923241678,
+      "median_absolute_error": 0.018704161439165562,
+      "sharpe_ratio": 4.150818040654779,
+      "max_drawdown": 0.5148659605056778,
+      "brier_score": 0.24880626364314742,
+      "expected_calibration_error": 0.09911561575026982
+    },
+    {
+      "fold": 4,
+      "test_size": 2030,
+      "verified_accuracy": 0.5408866995073892,
+      "tradeable_accuracy": 0.6255656108597285,
+      "tradeable_count": 884,
+      "win_loss_ratio": 0.9132253182408145,
+      "median_absolute_error": 0.018973460598748618,
+      "sharpe_ratio": 4.227294745844334,
+      "max_drawdown": 0.4739262971832692,
+      "brier_score": 0.24494136862222435,
+      "expected_calibration_error": 0.060099256354121354
+    },
+    {
+      "fold": 5,
+      "test_size": 2030,
+      "verified_accuracy": 0.4980295566502463,
+      "tradeable_accuracy": 0.5155131264916468,
+      "tradeable_count": 419,
+      "win_loss_ratio": 0.6775321205022141,
+      "median_absolute_error": 0.016903095015455345,
+      "sharpe_ratio": 1.1379946546592214,
+      "max_drawdown": 0.38404263632660973,
+      "brier_score": 0.255344126005257,
+      "expected_calibration_error": 0.0699007316020127
+    }
+  ],
+  "suppressed_symbols": [
+    "AAPL",
+    "AMZN",
+    "GOOGL",
+    "MSFT",
+    "RELIANCE.BSE",
+    "TSLA"
+  ],
+  "suppressed_setups": [
+    "general"
+  ],
+  "learned_indicator_weight_rows": 54
+}

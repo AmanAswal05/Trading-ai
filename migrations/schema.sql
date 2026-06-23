@@ -94,12 +94,51 @@ CREATE TABLE IF NOT EXISTS predictions (
   predicted_direction TEXT NOT NULL,
   confidence_score NUMERIC(5, 2) NOT NULL,
   model_version TEXT NOT NULL,
+  market_regime TEXT,
+  signal_strength TEXT,
+  confidence_before_filter NUMERIC(5, 2),
+  confidence_after_filter NUMERIC(5, 2),
+  signal_quality TEXT,
+  filter_reason TEXT,
+  is_tradeable_signal BOOLEAN DEFAULT false,
+  max_position_size NUMERIC(8, 6),
+  calibrated_prob_up NUMERIC(8, 6),
+  reliability_grade TEXT,
+  stock_reliability_score NUMERIC(5, 2),
+  timeframe_reliability_score NUMERIC(5, 2),
   status TEXT NOT NULL DEFAULT 'PENDING',
   verification_date TIMESTAMPTZ,
   actual_price NUMERIC(12, 4),
   actual_direction TEXT,
   prediction_result TEXT,
   error_percentage NUMERIC(8, 4),
+  raw_confidence NUMERIC(5, 2),
+  calibrated_confidence NUMERIC(5, 2),
+  regime_adjusted_confidence NUMERIC(5, 2),
+  macro_adjusted_confidence NUMERIC(5, 2),
+  multi_timeframe_adjusted_confidence NUMERIC(5, 2),
+  final_confidence NUMERIC(5, 2),
+  raw_probability NUMERIC(8, 6),
+  calibrated_probability NUMERIC(8, 6),
+  final_probability NUMERIC(8, 6),
+  calibrated_prob_down NUMERIC(8, 6),
+  raw_prob_up NUMERIC(8, 6),
+  raw_prob_down NUMERIC(8, 6),
+  ensemble_prob_up NUMERIC(8, 6),
+  ensemble_prob_down NUMERIC(8, 6),
+  final_prob_up NUMERIC(8, 6),
+  final_prob_down NUMERIC(8, 6),
+  trend_regime TEXT,
+  volatility_regime TEXT,
+  regime_confidence NUMERIC(5, 2),
+  regime_reason TEXT,
+  macro_risk_score NUMERIC(5, 2),
+  macro_bias TEXT,
+  alignment_score NUMERIC(5, 2),
+  timeframe_conflict BOOLEAN DEFAULT FALSE,
+  trade_filter_score NUMERIC(5, 2),
+  trade_filter_decision TEXT,
+  rejection_reasons JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -188,3 +227,13 @@ CREATE TABLE IF NOT EXISTS trust_metrics (
 -- Indices for new tables
 CREATE INDEX IF NOT EXISTS idx_prediction_metrics_pred_id ON prediction_metrics(prediction_id);
 CREATE INDEX IF NOT EXISTS idx_prediction_explanations_pred_id ON prediction_explanations(prediction_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_prediction_metrics_unique_pred_id ON prediction_metrics(prediction_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_prediction_explanations_unique_pred_id ON prediction_explanations(prediction_id);
+
+ALTER TABLE predictions DROP CONSTRAINT IF EXISTS predictions_max_position_size_check;
+ALTER TABLE predictions ADD CONSTRAINT predictions_max_position_size_check
+  CHECK (max_position_size IS NULL OR max_position_size BETWEEN 0 AND 1);
+
+ALTER TABLE predictions DROP CONSTRAINT IF EXISTS predictions_calibrated_prob_up_check;
+ALTER TABLE predictions ADD CONSTRAINT predictions_calibrated_prob_up_check
+  CHECK (calibrated_prob_up IS NULL OR calibrated_prob_up BETWEEN 0 AND 1);

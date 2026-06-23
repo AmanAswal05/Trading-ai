@@ -19,6 +19,9 @@ export interface IndicatorPerformance {
   success_contribution: number; // count of CORRECT outcomes when active
   failure_contribution: number; // count of INCORRECT outcomes when active
   total_activations: number;    // total times this indicator was active
+  partial_contribution: number;
+  contribution_score: number;
+  data_status: 'RELIABLE' | 'UNRELIABLE' | 'INSUFFICIENT_VERIFIED_DATA';
   correlation_correct: number;  // correlation with correct predictions
   correlation_incorrect: number;
   last_updated: string;
@@ -76,7 +79,7 @@ const DEFAULT_WEIGHTS: AdaptiveWeights = {
 };
 
 // Min/max bounds for safety (Phase 10)
-const WEIGHT_MIN_FACTOR = 0.1;  // weight cannot go below 10% of default
+const WEIGHT_MIN_FACTOR = 0.25;
 const WEIGHT_MAX_FACTOR = 3.0;  // weight cannot exceed 300% of default
 const MIN_VERIFIED_PREDICTIONS = 50; // minimum sample size before adjusting
 const LEARNING_RATE = 0.15;  // how aggressively weights update per cycle
@@ -143,24 +146,6 @@ export function analyzeIndicatorPerformance(verifiedRecords: PredictionRecord[])
     r => r.status === 'VERIFIED' && r.explanation && r.prediction_result
   );
 
-  if (withExplanation.length < MIN_VERIFIED_PREDICTIONS) {
-    console.warn(`[AdaptiveWeights] Only ${withExplanation.length} records with explanations (need ${MIN_VERIFIED_PREDICTIONS}). Returning defaults.`);
-    return INDICATOR_MAP.map(ind => ({
-      indicator_name: ind.name,
-      current_weight: 1.0,
-      previous_weight: 1.0,
-      accuracy_score: 50,
-      reliability_score: 50,
-      confidence_score: 0,
-      success_contribution: 0,
-      failure_contribution: 0,
-      total_activations: 0,
-      correlation_correct: 0,
-      correlation_incorrect: 0,
-      last_updated: new Date().toISOString(),
-    }));
-  }
-
   const currentWeights = loadCurrentWeights();
   const performances: IndicatorPerformance[] = [];
 
@@ -176,7 +161,7 @@ export function analyzeIndicatorPerformance(verifiedRecords: PredictionRecord[])
 
     for (const record of withExplanation) {
       const contribution = (record.explanation as any)?.[indicator.contributionKey] || 0;
-      const isActive = contribution > 0;
+      const isActive = Math.abs(contribution) > 0;
       const result = record.prediction_result;
 
       if (isActive) {
@@ -195,12 +180,12 @@ export function analyzeIndicatorPerformance(verifiedRecords: PredictionRecord[])
     const directionalActive = totalActive - activeNeutral;
     const accuracyWhenActive = directionalActive > 0
       ? ((activeCorrect + activePartial * 0.5) / directionalActive) * 100
-      : 50;
+      : 0;
 
     const directionalInactive = totalInactive;
     const accuracyWhenInactive = directionalInactive > 0
       ? (inactiveCorrect / directionalInactive) * 100
-      : 50;
+      : 0;
 
     // Correlation: positive means indicator helps, negative means it hurts
     const correlationCorrect = accuracyWhenActive - accuracyWhenInactive;
@@ -220,14 +205,14 @@ export function analyzeIndicatorPerformance(verifiedRecords: PredictionRecord[])
     }
     const reliability = quarterAccuracies.length >= 2
       ? 100 - (standardDeviation(quarterAccuracies) * 2) // Lower std dev = higher reliability
-      : 50;
+      : 0;
 
     // Statistical significance (confidence score)
     const confidenceScore = Math.min(100, Math.round((totalActive / withExplanation.length) * 100));
 
     // Determine current weight value (average across related weight keys)
     const avgCurrentWeight = indicator.weightKeys.reduce((sum, key) => {
-      const val = Math.abs(currentWeights[key]);
+      const val = Math.abs(currentWeights[key] / DEFAULT_WEIGHTS[key]);
       return sum + val;
     }, 0) / indicator.weightKeys.length;
 
@@ -245,6 +230,11 @@ export function analyzeIndicatorPerformance(verifiedRecords: PredictionRecord[])
       success_contribution: activeCorrect,
       failure_contribution: activeIncorrect,
       total_activations: totalActive,
+      partial_contribution: activePartial,
+      contribution_score: Number(correlationCorrect.toFixed(2)),
+      data_status: totalActive < 10
+        ? 'INSUFFICIENT_VERIFIED_DATA'
+        : totalActive < MIN_VERIFIED_PREDICTIONS ? 'UNRELIABLE' : 'RELIABLE',
       correlation_correct: Number(correlationCorrect.toFixed(2)),
       correlation_incorrect: Number(correlationIncorrect.toFixed(2)),
       last_updated: new Date().toISOString(),
@@ -296,7 +286,7 @@ export function computeAdaptiveWeights(
       const maxBound = absDefault * WEIGHT_MAX_FACTOR;
       newVal = Math.max(minBound, Math.min(maxBound, newVal));
 
-      (newWeights as any)[key] = isNegative ? -Math.round(newVal) : Math.round(newVal);
+      (newWeights as any)[key] = isNegative ? -Number(newVal.toFixed(4)) : Number(newVal.toFixed(4));
     }
   }
 
@@ -332,6 +322,19 @@ export function saveWeightSnapshot(
     indicatorPerformance: performances,
   });
   writeWeightHistory(history);
+
+  const ratios = Object.fromEntries(INDICATOR_MAP.map(indicator => {
+    const ratio = indicator.weightKeys.reduce(
+      (sum, key) => sum + Math.abs(weights[key] / DEFAULT_WEIGHTS[key]),
+      0
+    ) / indicator.weightKeys.length;
+    return [indicator.name, Number(Math.max(WEIGHT_MIN_FACTOR, Math.min(WEIGHT_MAX_FACTOR, ratio)).toFixed(4))];
+  }));
+  const fs = require('fs');
+  const path = require('path');
+  const artifactsDir = path.join(process.cwd(), 'artifacts');
+  fs.mkdirSync(artifactsDir, { recursive: true });
+  fs.writeFileSync(path.join(artifactsDir, 'indicator_weights.json'), JSON.stringify(ratios, null, 2), 'utf8');
 }
 
 /**

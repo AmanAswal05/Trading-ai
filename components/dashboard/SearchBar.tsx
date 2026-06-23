@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ChevronRight } from 'lucide-react';
 
@@ -33,27 +33,24 @@ interface SearchBarProps {
 export default function SearchBar({ variant = 'default' }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<TickerSuggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Filter suggestions based on query
+  // Filter suggestions based on query
+  const suggestions = useMemo<TickerSuggestion[]>(() => {
     if (query.trim() === '') {
-      setSuggestions(popularTickers);
-    } else {
-      const filtered = popularTickers.filter(
-        (t) =>
-          t.symbol.toLowerCase().includes(query.toLowerCase()) ||
-          t.name.toLowerCase().includes(query.toLowerCase())
-      );
-      // If no match in presets, show a generic search suggestion for the queried text
-      if (filtered.length === 0 && query.length < 10) {
-        setSuggestions([{ symbol: query.toUpperCase(), name: `Search for '${query.toUpperCase()}'`, exchange: 'Query' }]);
-      } else {
-        setSuggestions(filtered);
-      }
+      return popularTickers;
     }
+    const filtered = popularTickers.filter(
+      (t) =>
+        t.symbol.toLowerCase().includes(query.toLowerCase()) ||
+        t.name.toLowerCase().includes(query.toLowerCase())
+    );
+    // If no match in presets, show a generic search suggestion for the queried text
+    if (filtered.length === 0 && query.length < 10) {
+      return [{ symbol: query.toUpperCase(), name: `Search for '${query.toUpperCase()}'`, exchange: 'Query' }];
+    }
+    return filtered;
   }, [query]);
 
   useEffect(() => {

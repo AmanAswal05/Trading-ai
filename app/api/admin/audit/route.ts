@@ -1,47 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 import { calculateIndicators } from '@/lib/indicators';
 import { generatePrediction, TuningConfig } from '@/lib/prediction-engine';
 import { StockData, HistoricalQuote } from '@/types/stock';
+import { getAuthenticatedAdmin } from '@/lib/admin-api-auth';
 
 export const dynamic = 'force-dynamic';
 
-async function getUser(request: NextRequest) {
-  // Check if we have a mock user cookie in offline/mock mode
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url')) {
-    const mockUserCookie = request.cookies.get('sp_mock_user');
-    if (mockUserCookie) {
-      try {
-        const email = decodeURIComponent(mockUserCookie.value);
-        return {
-          id: 'mock-user-id',
-          email: email,
-        };
-      } catch (e) {
-        console.error('Failed to parse mock user cookie:', e);
-      }
-    }
-  }
-
-  const authHeader = request.headers.get('Authorization');
-  const token = authHeader?.replace('Bearer ', '');
-  if (!token) return null;
-
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return null;
-    return user;
-  } catch (err) {
-    console.error('Audit route auth error:', err);
-    return null;
-  }
-}
-
 export async function POST(request: NextRequest) {
-  const user = await getUser(request);
+  const user = await getAuthenticatedAdmin(request);
 
-  // Secure: Admin-only check
-  if (!user || !user.email || !(user.email.toLowerCase().includes('admin') || user.email.toLowerCase().endsWith('@stockpredict.ai'))) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
   }
 

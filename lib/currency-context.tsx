@@ -36,6 +36,8 @@ const FallbackRates: Record<CurrencyCode, number> = {
   JPY: 156.80,
 };
 
+const ALL_CURRENCIES: CurrencyCode[] = ['USD', 'INR', 'EUR', 'GBP', 'AED', 'CAD', 'AUD', 'JPY'];
+
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
@@ -45,21 +47,23 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
   // Load user choice from localStorage & DB
   useEffect(() => {
-    const allCurrencies = ['USD', 'INR', 'EUR', 'GBP', 'AED', 'CAD', 'AUD', 'JPY'];
     const stored = localStorage.getItem('sp_currency') as CurrencyCode | null;
-    if (stored && allCurrencies.includes(stored)) {
-      setCurrencyState(stored);
+    let timer: NodeJS.Timeout | null = null;
+    if (stored && ALL_CURRENCIES.includes(stored)) {
+      timer = setTimeout(() => {
+        setCurrencyState(stored);
+      }, 0);
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user?.id) {
         try {
-          const { data, error } = await supabase
+          const { data } = await supabase
             .from('users')
             .select('currency_preference')
             .eq('id', session.user.id)
             .single();
-          if (data?.currency_preference && allCurrencies.includes(data.currency_preference)) {
+          if (data?.currency_preference && ALL_CURRENCIES.includes(data.currency_preference)) {
             setCurrencyState(data.currency_preference as CurrencyCode);
             localStorage.setItem('sp_currency', data.currency_preference);
           }
@@ -70,6 +74,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
+      if (timer) clearTimeout(timer);
       subscription.unsubscribe();
     };
   }, []);

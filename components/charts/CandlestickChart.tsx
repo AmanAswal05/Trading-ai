@@ -85,31 +85,6 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
     }));
   }, [data, convert]);
 
-  // Custom tooltips showing all OHLC parameters in the active currency format
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length > 0) {
-      const item: HistoricalQuote = payload[0].payload;
-      return (
-        <div className="p-3.5 border border-border-custom bg-bg-card rounded-xl shadow-lg text-xs font-mono transition-theme leading-relaxed">
-          <p className="text-text-primary font-bold mb-1.5">{formatDate(item.date)}</p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <span className="text-text-secondary">Open:</span>
-            <span className="text-text-primary font-semibold text-right">{formatConvertedPrice(item.open)}</span>
-            <span className="text-text-secondary">High:</span>
-            <span className="text-accent-green font-semibold text-right">{formatConvertedPrice(item.high)}</span>
-            <span className="text-text-secondary">Low:</span>
-            <span className="text-accent-red font-semibold text-right">{formatConvertedPrice(item.low)}</span>
-            <span className="text-text-secondary">Close:</span>
-            <span className="text-text-primary font-bold text-right">{formatConvertedPrice(item.close)}</span>
-            <span className="text-text-secondary">Volume:</span>
-            <span className="text-text-muted text-right">{item.volume.toLocaleString()}</span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
   // Find min/max values to fit charts perfectly
   const lows = convertedData.map((d) => d.low);
   const highs = convertedData.map((d) => d.high);
@@ -146,7 +121,32 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
             tickLine={false}
             axisLine={false}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--bg-card-hover)', opacity: 0.1 }} />
+          <Tooltip
+            content={({ active, payload }: any) => {
+              if (active && payload && payload.length > 0) {
+                const item: HistoricalQuote = payload[0].payload;
+                return (
+                  <div className="p-3.5 border border-border-custom bg-bg-card rounded-xl shadow-lg text-xs font-mono transition-theme leading-relaxed">
+                    <p className="text-text-primary font-bold mb-1.5">{formatDate(item.date)}</p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <span className="text-text-secondary">Open:</span>
+                      <span className="text-text-primary font-semibold text-right">{formatConvertedPrice(item.open)}</span>
+                      <span className="text-text-secondary">High:</span>
+                      <span className="text-accent-green font-semibold text-right">{formatConvertedPrice(item.high)}</span>
+                      <span className="text-text-secondary">Low:</span>
+                      <span className="text-accent-red font-semibold text-right">{formatConvertedPrice(item.low)}</span>
+                      <span className="text-text-secondary">Close:</span>
+                      <span className="text-text-primary font-bold text-right">{formatConvertedPrice(item.close)}</span>
+                      <span className="text-text-secondary">Volume:</span>
+                      <span className="text-text-muted text-right">{item.volume.toLocaleString()}</span>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }}
+            cursor={{ fill: 'var(--bg-card-hover)', opacity: 0.1 }}
+          />
           {/* We pass a dummy dataKey, but our shape uses the full payload details */}
           <Bar dataKey="close" fill="transparent" shape={<Candlestick />} />
         </ComposedChart>

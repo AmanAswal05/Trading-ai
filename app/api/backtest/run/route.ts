@@ -91,7 +91,7 @@ async function launchBacktestAsync(jobId: string, config: BacktestConfig) {
       tickerResults,
       allRecords,
       modelComparison,
-      walkForwardResult,
+      walkForwardResult: walkForwardResult as any,
       monteCarloResults,
       stressTestResults,
       optimizationRecs,

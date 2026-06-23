@@ -1,4 +1,4 @@
-import { TechnicalIndicators } from '../types/stock';
+import { HistoricalQuote, TechnicalIndicators } from '../types/stock';
 
 export type MarketRegime = 'BULL' | 'BEAR' | 'SIDEWAYS' | 'HIGH_VOLATILITY' | 'LOW_VOLATILITY' | 'TRENDING' | 'MEAN_REVERTING';
 
@@ -13,7 +13,11 @@ export interface RegimeClassification {
  * Detects the current market regime based on technical indicators and price.
  * Priority: HIGH_VOLATILITY > MEAN_REVERTING > TRENDING > BULL/BEAR > SIDEWAYS > LOW_VOLATILITY
  */
-export function detectRegime(indicators: TechnicalIndicators, price: number): RegimeClassification {
+export function detectRegime(
+  indicators: TechnicalIndicators,
+  price: number,
+  context?: { history?: HistoricalQuote[]; volume?: number }
+): RegimeClassification {
   const {
     rsi14,
     sma50,
@@ -25,7 +29,14 @@ export function detectRegime(indicators: TechnicalIndicators, price: number): Re
     bollingerLower,
   } = indicators;
 
-  const indicatorsUsed = ['RSI14', 'SMA50', 'SMA200', 'EMA12', 'EMA26', 'ATR14', 'BollingerBands'];
+  const recent = context?.history?.slice(-50) ?? [];
+  const firstClose = recent[0]?.close;
+  const trendSlope = firstClose ? (price - firstClose) / firstClose / Math.max(1, recent.length - 1) : 0;
+  const peak = recent.length > 0 ? Math.max(...recent.map(quote => quote.close)) : price;
+  const drawdown = peak > 0 ? (peak - price) / peak : 0;
+  const averageVolume = recent.length > 0 ? recent.reduce((sum, quote) => sum + quote.volume, 0) / recent.length : 0;
+  const volumeConfirmed = Boolean(context?.volume && averageVolume && context.volume >= averageVolume);
+  const indicatorsUsed = ['RSI14', 'SMA50', 'SMA200', 'ATR14', 'trendSlope', 'volumeConfirmation', 'drawdown'];
 
   const atrRatio = atr14 / price;
   const sma50_200_diff = Math.abs(sma50 - sma200) / sma200;
@@ -58,7 +69,7 @@ export function detectRegime(indicators: TechnicalIndicators, price: number): Re
   }
 
   // 3. TRENDING
-  if (sma50_200_diff > 0.05) {
+  if (sma50_200_diff > 0.05 && Math.abs(trendSlope) > 0.001) {
     const confidence = Math.min(100, Math.round((sma50_200_diff / 0.05) * 50 + 50));
     return {
       regime: 'TRENDING',
@@ -69,8 +80,8 @@ export function detectRegime(indicators: TechnicalIndicators, price: number): Re
   }
 
   // 4. BULL/BEAR
-  const isBull = price > sma200 && price > sma50 && ema12 > ema26;
-  const isBear = price < sma200 && price < sma50 && ema12 < ema26;
+  const isBull = price > sma200 && price > sma50 && ema12 > ema26 && trendSlope > 0 && (volumeConfirmed || drawdown < 0.05);
+  const isBear = price < sma200 && price < sma50 && ema12 < ema26 && trendSlope < 0 && (volumeConfirmed || drawdown > 0.08);
   if (isBull) {
     const emaDiff = (ema12 - ema26) / ema26;
     const confidence = Math.min(100, Math.round(60 + Math.min(40, emaDiff * 1000)));

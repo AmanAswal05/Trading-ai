@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
 
     if (!ticker) return NextResponse.json({ error: 'ticker required' }, { status: 400 });
 
-    const validSimCounts = [10000, 50000, 100000, 250000, 1000000];
-    const validatedSimCount = validSimCounts.includes(simCount) ? simCount : 10000;
+    const validSimCounts = [100000, 250000, 500000, 1000000];
+    const validatedSimCount = validSimCounts.includes(simCount) ? simCount : 100000;
 
     // Fetch 3 years of data for returns computation
     const endDate = new Date().toISOString().split('T')[0];

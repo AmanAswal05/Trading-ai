@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 
@@ -18,8 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     setErrorMsg('');
 
-    const isMockMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase-url');
+    const isMockMode = !isSupabaseConfigured;
 
     if (isMockMode) {
       console.warn('Supabase not configured. Simulating mock login for testing.');
@@ -39,6 +38,8 @@ export default function LoginPage() {
         throw error;
       }
 
+      document.cookie = 'sp_mock_user=; path=/; max-age=0; SameSite=Lax';
+      document.cookie = 'sp_mock_subscription=; path=/; max-age=0; SameSite=Lax';
       router.push('/dashboard');
     } catch (err: any) {
       setErrorMsg(err.message || 'Login failed. Please verify credentials.');

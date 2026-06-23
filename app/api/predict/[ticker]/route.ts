@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePrediction } from '@/lib/prediction-engine';
-import { StockData } from '@/types/stock';
 import { PredictionsDbService } from '@/lib/predictions-db';
 import { supabase } from '@/lib/supabase';
-import { getStockDataInternal } from '@/app/api/stock/[ticker]/route';
+import { getStockDataInternal } from '@/lib/stock-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,6 +93,27 @@ export async function GET(
       predicted_price: predictedPrice,
       predicted_direction: prediction.direction,
       confidence_score: prediction.confidence,
+      signal_strength: prediction.signalStrength,
+      confidence_before_filter: prediction.confidenceBeforeFilter,
+      confidence_after_filter: prediction.confidenceAfterFilter ?? prediction.confidence,
+      signal_quality: prediction.signalQuality,
+      filter_reason: prediction.filterReason,
+      is_tradeable_signal: prediction.isTradeableSignal,
+      max_position_size: prediction.maxPositionSize,
+      calibrated_prob_up: prediction.direction === 'UP'
+        ? prediction.confidence / 100
+        : prediction.direction === 'DOWN'
+          ? 1 - prediction.confidence / 100
+          : 0.5,
+      reliability_grade: prediction.reliabilityGrade,
+      stock_reliability_score: prediction.stockReliabilityScore,
+      timeframe_reliability_score: prediction.timeframeReliabilityScore,
+      reliability_warnings: prediction.reliabilityWarnings,
+      regime: prediction.regime,
+      volatility_level: prediction.riskTier,
+      indicator_setup: prediction.explainability
+        ? `${prediction.explainability.trendContribution >= prediction.explainability.volumeContribution ? 'trend' : 'volume'}+${prediction.explainability.macdContribution >= prediction.explainability.rsiContribution ? 'macd' : 'rsi'}`
+        : undefined,
       model_version: modelVersion as 'V1' | 'V2' | 'V3',
       metrics: prediction.probabilities ? {
         bullish_probability: prediction.probabilities.bullish,
@@ -125,13 +145,14 @@ export async function GET(
       predictedPrice,
       timeframe,
       similarSetup,
+      reliabilityWarnings: prediction.reliabilityWarnings || [],
     };
 
     return NextResponse.json(responsePayload);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(`Prediction calculation/logging failed for ${ticker}:`, err);
     return NextResponse.json(
-      { error: err.message || 'Failed to calculate prediction' },
+      { error: err instanceof Error ? err.message : 'Failed to calculate prediction' },
       { status: 500 }
     );
   }

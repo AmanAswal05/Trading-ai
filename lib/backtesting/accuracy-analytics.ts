@@ -13,14 +13,30 @@ import {
 
 const RISK_FREE_RATE_DAILY = 0.05 / 252; // 5% annualized
 
+function classifySignalStrength(confidence: number): 'NO_SIGNAL' | 'WEAK_SIGNAL' | 'MODERATE_SIGNAL' | 'STRONG_SIGNAL' {
+  if (confidence < 55) return 'NO_SIGNAL';
+  if (confidence < 65) return 'WEAK_SIGNAL';
+  if (confidence < 75) return 'MODERATE_SIGNAL';
+  return 'STRONG_SIGNAL';
+}
+
+function isTradeable(record: BacktestPredictionRecord): boolean {
+  const signal = record.signalStrength ?? classifySignalStrength(record.confidence);
+  return signal === 'MODERATE_SIGNAL' || signal === 'STRONG_SIGNAL';
+}
+
 // ─── Core Metric Computation ──────────────────────────────────────────────────
 
 export function computeAccuracyReport(records: BacktestPredictionRecord[]): AccuracyReport {
   const directional = records.filter(r => r.direction !== 'NEUTRAL');
   const verified = records.filter(r => r.result !== 'PENDING');
+  const tradeable = verified.filter(isTradeable);
   const correct = verified.filter(r => r.result === 'CORRECT');
   const incorrect = verified.filter(r => r.result === 'INCORRECT');
   const partial = verified.filter(r => r.result === 'PARTIALLY_CORRECT');
+  const tradeableCorrect = tradeable.filter(r => r.result === 'CORRECT');
+  const tradeableIncorrect = tradeable.filter(r => r.result === 'INCORRECT');
+  const tradeablePartial = tradeable.filter(r => r.result === 'PARTIALLY_CORRECT');
 
   const totalPredictions = records.length;
   const verifiedPredictions = verified.length;
@@ -29,10 +45,16 @@ export function computeAccuracyReport(records: BacktestPredictionRecord[]): Accu
   const accuracy = verifiedPredictions > 0
     ? ((correct.length + partial.length * 0.5) / verifiedPredictions) * 100
     : 0;
+  const tradeableAccuracy = tradeable.length > 0
+    ? ((tradeableCorrect.length + tradeablePartial.length * 0.5) / tradeable.length) * 100
+    : 0;
 
   const winRate = (correct.length + incorrect.length) > 0
     ? (correct.length / (correct.length + incorrect.length)) * 100
     : 0;
+  const tradeableWinLoss = tradeableIncorrect.length > 0
+    ? tradeableCorrect.length / tradeableIncorrect.length
+    : (tradeableCorrect.length > 0 ? tradeableCorrect.length : 0);
 
   // Precision, Recall, F1
   const tp = correct.length;
@@ -47,8 +69,10 @@ export function computeAccuracyReport(records: BacktestPredictionRecord[]): Accu
 
   // Error metrics
   const errors = verified.map(r => Math.abs(r.predictedReturn - r.actualReturn));
+  const tradeableErrors = tradeable.map(r => Math.abs(r.predictedReturn - r.actualReturn));
   const averageError = mean(errors);
   const medianError = median(errors);
+  const tradeableMedianError = median(tradeableErrors);
 
   // Equity curve and drawdown
   const { equityCurve, drawdownCurve, maxDrawdown } = buildEquityCurve(records);
@@ -90,6 +114,19 @@ export function computeAccuracyReport(records: BacktestPredictionRecord[]): Accu
     calibrationBuckets,
     equityCurve,
     drawdownCurve,
+    beforeFiltering: {
+      accuracy: round(accuracy),
+      winLossRatio: round(correct.length / Math.max(1, incorrect.length)),
+      medianError: round(medianError),
+      predictionCount: verifiedPredictions,
+    },
+    afterFiltering: {
+      tradeableAccuracy: round(tradeableAccuracy),
+      winLossRatio: round(tradeableWinLoss),
+      medianError: round(tradeableMedianError),
+      filteredPredictionCount: tradeable.length,
+      noSignalCount: verified.filter(r => (r.signalStrength ?? classifySignalStrength(r.confidence)) === 'NO_SIGNAL').length,
+    },
   };
 }
 

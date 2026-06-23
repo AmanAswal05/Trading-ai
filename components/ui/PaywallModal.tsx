@@ -7,6 +7,10 @@ import { useTheme } from '@/lib/theme-context';
 import { X, Check, ShieldAlert, Sparkles, Zap, Lock, CreditCard } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+function generateMockTxId(): string {
+  return `mock_tx_${Date.now()}`;
+}
+
 interface PaywallModalProps {
   isOpen: boolean;
   onClose?: () => void;
@@ -118,7 +122,7 @@ export default function PaywallModal({ isOpen, onClose, reason }: PaywallModalPr
             currency: 'INR',
             payment_provider: 'MockGateway',
             status: 'Success',
-            transaction_id: `mock_tx_${Date.now()}`,
+            transaction_id: generateMockTxId(),
           });
         } else {
           // LocalStorage fallback for completely unauthenticated guests
@@ -133,7 +137,7 @@ export default function PaywallModal({ isOpen, onClose, reason }: PaywallModalPr
 
       // If Razorpay/Stripe checkout URL is provided
       if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+        window.location.assign(data.checkoutUrl);
       } else {
         throw new Error('No checkout endpoint resolved.');
       }

@@ -57,7 +57,7 @@ export default function ConfidenceGauge({
           {confidence}%
         </span>
         <span className="text-[10px] text-text-secondary uppercase font-semibold tracking-wider">
-          Confidence
+          Calibrated Conf.
         </span>
       </div>
     </div>

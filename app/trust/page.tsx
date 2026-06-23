@@ -6,6 +6,16 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { CheckCircle2, ShieldCheck, Activity, BarChart3, ArrowLeft, Info, HelpCircle, Percent } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
+function formatMetric(value: unknown, decimals: number, suffix = ''): string {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? `${numericValue.toFixed(decimals)}${suffix}` : 'N/A';
+}
+
+function formatPrice(value: unknown): string {
+  const formatted = formatMetric(value, 2);
+  return formatted === 'N/A' ? formatted : `$${formatted}`;
+}
+
 export default function PublicTrustPanelPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -108,13 +118,13 @@ export default function PublicTrustPanelPage() {
                       <CheckCircle2 className="w-16 h-16" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Global Verified Accuracy</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Overall Model Accuracy</span>
                       <h2 className="text-4xl font-extrabold text-accent-green mt-2">
-                        {stats.accuracy}%
+                        {stats.overallAccuracy ?? stats.accuracy}%
                       </h2>
                     </div>
                     <p className="text-xs text-text-muted mt-4">
-                      Percentage of correct predictions among all directional forecasts.
+                      All verified predictions before signal filtering.
                     </p>
                   </div>
 
@@ -124,13 +134,13 @@ export default function PublicTrustPanelPage() {
                       <Activity className="w-16 h-16" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Predictions Verified</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Tradeable Signal Accuracy</span>
                       <h2 className="text-4xl font-extrabold text-text-primary mt-2">
-                        {stats.totalCount}
+                        {stats.tradeableAccuracy ?? stats.accuracy}%
                       </h2>
                     </div>
                     <p className="text-xs text-text-muted mt-4">
-                      Total historical forecast outcomes logged and verified against market data.
+                      Only `MODERATE_SIGNAL` and `STRONG_SIGNAL` predictions count here.
                     </p>
                   </div>
 
@@ -140,13 +150,13 @@ export default function PublicTrustPanelPage() {
                       <Percent className="w-16 h-16" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Avg Target Price Error</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Median Price Error</span>
                       <h2 className="text-4xl font-extrabold text-premium-gold mt-2">
-                        {stats.avgError !== undefined ? `${stats.avgError}%` : 'N/A'}
+                        {stats.medianError !== undefined ? `${stats.medianError}%` : 'N/A'}
                       </h2>
                     </div>
                     <p className="text-xs text-text-muted mt-4">
-                      Median point forecast error: {stats.medianError !== undefined ? `${stats.medianError}%` : 'N/A'}
+                      Average point forecast error: {stats.avgError !== undefined ? `${stats.avgError}%` : 'N/A'}
                     </p>
                   </div>
 
@@ -156,13 +166,13 @@ export default function PublicTrustPanelPage() {
                       <ShieldCheck className="w-16 h-16" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Data Feed Status</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary block">Filtered Predictions</span>
                       <h2 className="text-xl font-extrabold text-accent-green mt-4 flex items-center gap-1.5 uppercase">
-                        <span className="h-2.5 w-2.5 rounded-full bg-accent-green animate-pulse inline-block" /> Operational
+                        {stats.filteredPredictionsCount ?? 0}
                       </h2>
                     </div>
                     <p className="text-xs text-text-muted mt-5.5">
-                      Daily real-time stock price and volume feed status.
+                      Predictions excluded from the tradeable signal set.
                     </p>
                   </div>
                 </div>
@@ -239,7 +249,7 @@ export default function PublicTrustPanelPage() {
                           total: 0,
                           accuracy: 0,
                           avgError: 0,
-                          calibrationRating: 'No Data'
+                          calibrationRating: 'Insufficient Data'
                         };
 
                         const focus = version === 'V1' ? 'Balanced Mode' : version === 'V2' ? 'Momentum Engine' : 'Trend Tracker';
@@ -273,11 +283,11 @@ export default function PublicTrustPanelPage() {
                               </div>
                               <div>
                                 <span className="text-[8px] uppercase text-text-muted font-bold block">Win Rate</span>
-                                <span className="font-bold text-accent-green">{model.accuracy.toFixed(1)}%</span>
+                                <span className="font-bold text-accent-green">{formatMetric(model.accuracy, 1, '%')}</span>
                               </div>
                               <div>
-                                <span className="text-[8px] uppercase text-text-muted font-bold block">Avg Error</span>
-                                <span className="font-bold text-premium-gold">{model.avgError.toFixed(2)}%</span>
+                                <span className="text-[8px] uppercase text-text-muted font-bold block">Median Error</span>
+                                <span className="font-bold text-premium-gold">{formatMetric(model.medianError, 2, '%')}</span>
                               </div>
                             </div>
                           </div>
@@ -333,15 +343,15 @@ export default function PublicTrustPanelPage() {
                               <td className="py-3 px-1 font-mono font-bold text-text-primary">{row.ticker}</td>
                               <td className="py-3">{dateStr}</td>
                               <td className="py-3 text-center font-mono font-bold text-[10px]">{row.timeframe}</td>
-                              <td className="py-3 text-right">${row.current_price.toFixed(2)}</td>
-                              <td className="py-3 text-right">${row.predicted_price.toFixed(2)}</td>
+                              <td className="py-3 text-right">{formatPrice(row.current_price)}</td>
+                              <td className="py-3 text-right">{formatPrice(row.predicted_price)}</td>
                               <td className="py-3 text-center">
                                 <span className={`text-[10px] font-bold ${row.predicted_direction === 'UP' ? 'text-accent-green' : row.predicted_direction === 'DOWN' ? 'text-accent-red' : 'text-text-muted'}`}>
                                   {row.predicted_direction}
                                 </span>
                               </td>
                               <td className="py-3 text-right font-medium text-text-primary">
-                                ${row.actual_price ? row.actual_price.toFixed(2) : '-'}
+                                {row.actual_price == null ? '-' : formatPrice(row.actual_price)}
                               </td>
                               <td className="py-3 text-center">
                                 <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-bold border ${resultColors[row.prediction_result] || 'bg-bg-secondary text-text-secondary'}`}>
@@ -349,7 +359,7 @@ export default function PublicTrustPanelPage() {
                                 </span>
                               </td>
                               <td className="py-3 text-right font-mono text-premium-gold font-medium">
-                                {row.error_percentage !== undefined ? `${row.error_percentage.toFixed(2)}%` : '-'}
+                                {row.error_percentage == null ? '-' : formatMetric(row.error_percentage, 2, '%')}
                               </td>
                             </tr>
                           );

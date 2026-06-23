@@ -44,10 +44,11 @@ export default function ResultsDashboard({ report, jobId }: Props) {
           { label: 'Total Predictions', value: summary.totalPredictions.toLocaleString(), icon: '📈', color: COLOR_PRIMARY },
           { label: 'Verified', value: summary.verifiedPredictions.toLocaleString(), icon: '✅', color: COLOR_POSITIVE },
           { label: 'Overall Accuracy', value: `${summary.overallAccuracy}%`, icon: '🎯', color: summary.overallAccuracy >= 55 ? COLOR_POSITIVE : COLOR_NEGATIVE },
+          { label: 'Tradeable Accuracy', value: `${sections.filteredMetrics?.tradeableAccuracy ?? summary.overallAccuracy}%`, icon: '🧭', color: (sections.filteredMetrics?.tradeableAccuracy ?? summary.overallAccuracy) >= 55 ? COLOR_POSITIVE : COLOR_NEGATIVE },
           { label: 'Best Model', value: summary.bestModel.replace(' Model', ''), icon: '🏆', color: COLOR_PURPLE },
           { label: 'Sharpe Ratio', value: sections.riskAnalysis.sharpe.toString(), icon: '📐', color: sections.riskAnalysis.sharpe > 1 ? COLOR_POSITIVE : COLOR_NEUTRAL },
-          { label: 'Max Drawdown', value: `-${sections.drawdownAnalysis.maxDrawdown}%`, icon: '📉', color: COLOR_NEGATIVE },
-          { label: 'Win/Loss Ratio', value: sections.winLossRatio['7D'] ? `${sections.winLossRatio['7D'].ratio}` : 'N/A', icon: '⚖️', color: COLOR_PRIMARY },
+          { label: 'Filtered Count', value: sections.filteredMetrics?.filteredPredictionsCount?.toLocaleString() ?? '0', icon: '🧹', color: COLOR_PRIMARY },
+          { label: 'Win/Loss After', value: sections.filteredMetrics?.winLossRatioAfterFiltering?.toFixed(2) ?? 'N/A', icon: '⚖️', color: COLOR_PRIMARY },
           { label: 'Top Ticker', value: summary.topPerformingTicker, icon: '⭐', color: COLOR_POSITIVE },
         ].map(card => (
           <div key={card.label} className="summary-card">
@@ -82,6 +83,12 @@ export default function ResultsDashboard({ report, jobId }: Props) {
       {/* ─── OVERVIEW ──────────────────────────────────────────────────── */}
       {activeSection === 'overview' && (
         <div className="section-content">
+          {!sections.filteredMetrics?.targetAchieved && (
+            <div className="mb-4 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-sm font-medium">
+              Target not achieved yet.
+            </div>
+          )}
+
           <div className="charts-grid-2">
             {/* Equity Curve */}
             <div className="chart-card wide">
@@ -177,6 +184,40 @@ export default function ResultsDashboard({ report, jobId }: Props) {
                     <td><strong style={{ color: wl.ratio > 1 ? COLOR_POSITIVE : COLOR_NEGATIVE }}>{wl.ratio}</strong></td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="table-card">
+            <h3 className="chart-title">Before vs After Filtering</h3>
+            <table className="data-table">
+              <thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Accuracy</td>
+                  <td>{sections.filteredMetrics?.accuracyBeforeFiltering ?? summary.overallAccuracy}%</td>
+                  <td>{sections.filteredMetrics?.accuracyAfterFiltering ?? sections.filteredMetrics?.tradeableAccuracy ?? summary.overallAccuracy}%</td>
+                </tr>
+                <tr>
+                  <td>Win/Loss Ratio</td>
+                  <td>{sections.winLossRatio['7D'] ? `${sections.winLossRatio['7D'].ratio}` : 'N/A'}</td>
+                  <td>{sections.filteredMetrics?.winLossRatioAfterFiltering?.toFixed(2) ?? 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td>Median Error</td>
+                  <td>{report.sections.filteredMetrics?.medianErrorBeforeFiltering ?? 'N/A'}%</td>
+                  <td>{report.sections.filteredMetrics?.medianErrorAfterFiltering ?? 'N/A'}%</td>
+                </tr>
+                <tr>
+                  <td>Prediction Count</td>
+                  <td>{summary.totalPredictions}</td>
+                  <td>{sections.filteredMetrics?.filteredPredictionsCount ?? 0}</td>
+                </tr>
+                <tr>
+                  <td>No Signal Count</td>
+                  <td>0</td>
+                  <td>{sections.filteredMetrics?.noSignalCount ?? 0}</td>
+                </tr>
               </tbody>
             </table>
           </div>

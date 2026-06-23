@@ -6,7 +6,12 @@ export const dynamic = 'force-dynamic';
 const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:8000/api';
 
 export async function GET(req: NextRequest) {
-  const statusReport: any = {
+  const statusReport: {
+    frontend: string;
+    database: string;
+    backend: string;
+    timestamp: string;
+  } = {
     frontend: 'healthy',
     database: 'unknown',
     backend: 'unknown',
@@ -17,8 +22,8 @@ export async function GET(req: NextRequest) {
   try {
     await DbService.listScans(null);
     statusReport.database = `connected (${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Supabase' : 'Mock Mode Fallback'})`;
-  } catch (error: any) {
-    statusReport.database = `error: ${error.message}`;
+  } catch (error: unknown) {
+    statusReport.database = `error: ${error instanceof Error ? error.message : String(error)}`;
     statusReport.frontend = 'degraded';
   }
 
@@ -31,9 +36,9 @@ export async function GET(req: NextRequest) {
     } else {
       statusReport.backend = `offline (status ${res.status})`;
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     // In local standalone deployments, we degrade backend health gracefully
-    statusReport.backend = `offline (local default: ${error.message})`;
+    statusReport.backend = `offline (local default: ${error instanceof Error ? error.message : String(error)})`;
   }
 
   return NextResponse.json({

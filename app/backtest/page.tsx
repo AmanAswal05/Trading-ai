@@ -41,7 +41,7 @@ export default function BacktestLabPage() {
   const [testMonths, setTestMonths] = useState(12);
   const [stepMonths, setStepMonths] = useState(12);
   const [monteCarloEnabled, setMonteCarloEnabled] = useState(false);
-  const [simCount, setSimCount] = useState<number>(10000);
+  const [simCount, setSimCount] = useState<number>(100000);
   const [stressEnabled, setStressEnabled] = useState(false);
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>(['DOT_COM_CRASH', 'FINANCIAL_CRISIS_2008', 'COVID_CRASH']);
 
@@ -357,7 +357,7 @@ export default function BacktestLabPage() {
                 <div className="field-group">
                   <label className="field-label">Simulation Count</label>
                   <div className="pill-grid">
-                    {[10000, 50000, 100000, 250000, 1000000].map(n => (
+                    {[100000, 250000, 500000, 1000000].map(n => (
                       <button key={n} className={`pill ${simCount === n ? 'active' : ''}`} onClick={() => setSimCount(n)}>
                         {n >= 1000000 ? '1M' : n >= 250000 ? '250K' : n >= 100000 ? '100K' : n >= 50000 ? '50K' : '10K'}
                       </button>

@@ -30,6 +30,20 @@ export function buildReport(params: {
 
   const overallReport = computeAccuracyReport(allRecords);
   const sectorAccuracy = computeSectorAccuracy(tickerResults);
+  const filteredMetrics = {
+    overallAccuracy: overallReport.beforeFiltering.accuracy,
+    tradeableAccuracy: overallReport.afterFiltering.tradeableAccuracy,
+    filteredPredictionsCount: overallReport.afterFiltering.filteredPredictionCount,
+    noSignalCount: overallReport.afterFiltering.noSignalCount,
+    winLossRatioAfterFiltering: overallReport.afterFiltering.winLossRatio,
+    accuracyBeforeFiltering: overallReport.beforeFiltering.accuracy,
+    accuracyAfterFiltering: overallReport.afterFiltering.tradeableAccuracy,
+    medianErrorBeforeFiltering: overallReport.beforeFiltering.medianError,
+    medianErrorAfterFiltering: overallReport.afterFiltering.medianError,
+    targetAchieved: overallReport.afterFiltering.tradeableAccuracy >= 58
+      && overallReport.afterFiltering.winLossRatio > 1.3
+      && overallReport.afterFiltering.medianError < 1.5,
+  };
 
   // Best and worst tickers by Sharpe ratio
   const sortedByAccuracy = [...tickerResults].sort((a, b) => b.accuracy - a.accuracy);
@@ -102,13 +116,26 @@ export function buildReport(params: {
       accuracyByTimeframe,
       accuracyByStock: sortedByAccuracy.map(r => ({
         ticker: r.ticker,
-        sector: r.sector,
+        label: r.ticker,
+        verifiedCount: r.verifiedPredictions,
         accuracy: r.accuracy,
-        winRate: r.winRate,
-        sharpe: r.sharpeRatio,
+        winLossRatio: round(r.correctCount / Math.max(1, r.incorrectCount)),
+        medianError: r.medianError,
+        reliabilityGrade: r.accuracy >= 58 && r.winRate >= 60 ? 'HIGH' : r.accuracy >= 52 ? 'MEDIUM' : 'LOW',
+        warning: r.accuracy < 50 ? 'Weak stock edge.' : '',
       })),
-      accuracyBySector: sectorAccuracy,
+      accuracyBySector: sectorAccuracy.map(s => ({
+        sector: s.sector,
+        label: s.sector,
+        verifiedCount: s.tickerCount,
+        accuracy: s.accuracy,
+        winLossRatio: round(s.winRate / Math.max(1, 100 - s.winRate)),
+        medianError: 0,
+        reliabilityGrade: s.accuracy >= 58 ? 'HIGH' : s.accuracy >= 52 ? 'MEDIUM' : 'LOW',
+        warning: s.accuracy < 50 ? 'Sector edge is weak.' : '',
+      })),
       confidenceCalibration: overallReport.calibrationBuckets,
+      confidenceBucketPerformance: overallReport.calibrationBuckets,
       winLossRatio,
       drawdownAnalysis: {
         maxDrawdown,
@@ -126,6 +153,8 @@ export function buildReport(params: {
         beta: round(0.85 + Math.random() * 0.3), // Placeholder until market returns integrated
         alpha: round((annualReturn - 0.10) * 100), // Alpha vs 10% market benchmark
       },
+      filteredMetrics,
+      failureAnalysis: [],
       bestPerformingModel: bestModel ?? {
         model: 'V1', modelName: 'Current Model', rank: 1, compositeScore: 0,
         accuracy: overallReport.accuracy, winRate: overallReport.winRate,
@@ -228,15 +257,16 @@ export function exportReportAsHTML(report: ProfessionalReport): string {
   <div class="section">
     <h2>1. Accuracy by Stock</h2>
     <table>
-      <thead><tr><th>Ticker</th><th>Sector</th><th>Accuracy</th><th>Win Rate</th><th>Sharpe</th></tr></thead>
+      <thead><tr><th>Ticker</th><th>Verified</th><th>Accuracy</th><th>Win/Loss</th><th>Median Error</th><th>Grade</th></tr></thead>
       <tbody>
         ${sections.accuracyByStock.slice(0, 30).map(s => `
         <tr>
-          <td><strong>${s.ticker}</strong></td>
-          <td>${s.sector}</td>
+          <td><strong>${s.label}</strong></td>
+          <td>${s.verifiedCount}</td>
           <td><span class="badge ${s.accuracy >= 55 ? 'green' : 'red'}">${s.accuracy}%</span></td>
-          <td>${s.winRate}%</td>
-          <td class="${s.sharpe > 0 ? '' : 'negative'}">${s.sharpe}</td>
+          <td>${s.winLossRatio}</td>
+          <td>${s.medianError}%</td>
+          <td>${s.reliabilityGrade}</td>
         </tr>`).join('')}
       </tbody>
     </table>
@@ -246,14 +276,15 @@ export function exportReportAsHTML(report: ProfessionalReport): string {
   <div class="section">
     <h2>2. Accuracy by Sector</h2>
     <table>
-      <thead><tr><th>Sector</th><th>Tickers</th><th>Accuracy</th><th>Win Rate</th></tr></thead>
+      <thead><tr><th>Sector</th><th>Verified</th><th>Accuracy</th><th>Win/Loss</th><th>Grade</th></tr></thead>
       <tbody>
         ${sections.accuracyBySector.map(s => `
         <tr>
-          <td><strong>${s.sector}</strong></td>
-          <td>${s.tickerCount}</td>
+          <td><strong>${s.label}</strong></td>
+          <td>${s.verifiedCount}</td>
           <td><span class="badge ${s.accuracy >= 55 ? 'green' : 'red'}">${s.accuracy}%</span></td>
-          <td>${s.winRate}%</td>
+          <td>${s.winLossRatio}</td>
+          <td>${s.reliabilityGrade}</td>
         </tr>`).join('')}
       </tbody>
     </table>

@@ -18,26 +18,6 @@ interface VolumeChartProps {
 }
 
 export default function VolumeChart({ data }: VolumeChartProps) {
-  // Custom tooltips showing raw volume and pricing direction
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length > 0) {
-      const item: HistoricalQuote = payload[0].payload;
-      const isUp = item.close >= item.open;
-      return (
-        <div className="p-3 border border-border-custom bg-bg-card rounded-xl shadow-lg text-xs font-mono transition-theme leading-relaxed">
-          <p className="text-text-primary font-bold mb-1">{formatDate(item.date)}</p>
-          <div className="flex gap-2 items-center">
-            <span className="text-text-secondary">Volume:</span>
-            <span className={`font-bold ${isUp ? 'text-accent-green' : 'text-accent-red'}`}>
-              {item.volume.toLocaleString()}
-            </span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className="w-full h-32 sm:h-36">
       <ResponsiveContainer width="100%" height="100%">
@@ -67,7 +47,27 @@ export default function VolumeChart({ data }: VolumeChartProps) {
             tickLine={false}
             axisLine={false}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--bg-card-hover)', opacity: 0.1 }} />
+          <Tooltip
+            content={({ active, payload }: any) => {
+              if (active && payload && payload.length > 0) {
+                const item: HistoricalQuote = payload[0].payload;
+                const isUp = item.close >= item.open;
+                return (
+                  <div className="p-3 border border-border-custom bg-bg-card rounded-xl shadow-lg text-xs font-mono transition-theme leading-relaxed">
+                    <p className="text-text-primary font-bold mb-1">{formatDate(item.date)}</p>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-text-secondary">Volume:</span>
+                      <span className={`font-bold ${isUp ? 'text-accent-green' : 'text-accent-red'}`}>
+                        {item.volume.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }}
+            cursor={{ fill: 'var(--bg-card-hover)', opacity: 0.1 }}
+          />
           <Bar dataKey="volume">
             {data.map((entry, index) => {
               const isUp = entry.close >= entry.open;

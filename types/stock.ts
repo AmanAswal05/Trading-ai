@@ -1,4 +1,5 @@
 export type CurrencyCode = 'USD' | 'INR' | 'EUR' | 'GBP' | 'AED' | 'CAD' | 'AUD' | 'JPY';
+export type SignalStrength = 'NO_SIGNAL' | 'WEAK_SIGNAL' | 'MODERATE_SIGNAL' | 'STRONG_SIGNAL';
 
 export interface HistoricalQuote {
   date: string;
@@ -92,7 +93,6 @@ export interface PredictionResult {
   modelVersion?: 'V1' | 'V2' | 'V3';
   predictedPrice?: number;
   timeframe?: string;
-  
   // Advanced Trust & Explainability Fields
   probabilities?: {
     bullish: number;
@@ -121,8 +121,33 @@ export interface PredictionResult {
     verifiedCount: number;
   };
   regime?: string;
-  signalStrength?: 'NO_SIGNAL' | 'WEAK_SIGNAL' | 'STRONG_SIGNAL' | 'HIGH_CONVICTION';
+  trendRegime?: 'BULL_MARKET' | 'BEAR_MARKET' | 'SIDEWAYS_MARKET';
+  volatilityRegime?: 'HIGH_VOLATILITY' | 'NORMAL_VOLATILITY' | 'LOW_VOLATILITY';
+  regimeConfidence?: number;
+  regimeReason?: string;
+  regimeAdjustedConfidence?: number;
+  signalStrength?: SignalStrength;
+  reliabilityGrade?: 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT_DATA';
+  reliabilityWarnings?: string[];
+  confidenceBeforeFilter?: number;
+  confidenceAfterFilter?: number;
+  signalQuality?: string;
+  filterReason?: string;
+  isTradeableSignal?: boolean;
+  maxPositionSize?: number;
+  stockReliabilityScore?: number;
+  timeframeReliabilityScore?: number;
   insufficientEdge?: boolean;
+  tradeFilterScore?: number;
+  tradeFilterDecision?: string;
+  rejectionReasons?: string[];
+  macroContext?: {
+    riskScore: number;
+    bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+    niftyTrend: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+    niftyStrength: number;
+    vixLevel: number;
+  };
 }
 
 export interface NewsArticle {

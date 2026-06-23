@@ -37,8 +37,13 @@ export async function GET(request: NextRequest) {
       : 0;
 
     return NextResponse.json({
-      accuracy: stats.accuracy,
+      accuracy: stats.tradeableAccuracy ?? stats.accuracy,
+      overallAccuracy: stats.overallModelAccuracy ?? stats.accuracy,
+      tradeableAccuracy: stats.tradeableAccuracy ?? stats.accuracy,
       totalCount: stats.totalCount,
+      totalVerified: stats.totalCount,
+      filteredPredictionsCount: stats.filteredPredictionsCount,
+      noSignalCount: stats.noSignalCount,
       avgConfidence: Number(avgConfidence.toFixed(1)),
       confidenceCalibration: stats.confidenceCalibration,
       accuracyTrend: stats.accuracyTrend,
@@ -46,6 +51,16 @@ export async function GET(request: NextRequest) {
       accuracyByModel: stats.accuracyByModel,
       avgError: stats.avgError,
       medianError: stats.medianError,
+      winLossRatioAfterFiltering: stats.winLossRatioAfterFiltering,
+      brierScore: stats.brierScore,
+      overallWinLossRatio: stats.overallWinLossRatio ?? stats.winLossRatio,
+      accuracyBeforeFiltering: stats.accuracyBeforeFiltering ?? stats.accuracy,
+      accuracyAfterFiltering: stats.accuracyAfterFiltering ?? stats.tradeableAccuracy ?? stats.accuracy,
+      failureAnalysis: stats.failureAnalysis,
+      stockReliability: stats.stockReliability ?? stats.accuracyByStock,
+      timeframeReliability: stats.timeframeReliability,
+      confidenceBucketPerformance: stats.confidenceBucketPerformance,
+      targetAchieved: stats.targetAchieved,
     });
   } catch (err: any) {
     console.error('Failed to fetch public trust stats:', err);

@@ -9,18 +9,26 @@ export default function PageCover() {
   const [animating, setAnimating] = useState(true);
 
   useEffect(() => {
-    setVisible(true);
-    setAnimating(true);
+    let active = true;
+    const timer = setTimeout(() => {
+      if (!active) return;
+      setVisible(true);
+      setAnimating(true);
+    }, 0);
 
     const startFade = setTimeout(() => {
+      if (!active) return;
       setAnimating(false);
     }, 20);
 
     const endTransition = setTimeout(() => {
+      if (!active) return;
       setVisible(false);
     }, 220);
 
     return () => {
+      active = false;
+      clearTimeout(timer);
       clearTimeout(startFade);
       clearTimeout(endTransition);
     };

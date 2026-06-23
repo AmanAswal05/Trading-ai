@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { isAdminEmail } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
   // 1. Authenticated User Flow
   if (user) {
     // Check if user is an admin
-    if (user.email && (user.email.toLowerCase().includes('admin') || user.email.toLowerCase().endsWith('@stockpredict.ai'))) {
+    if (isAdminEmail(user.email)) {
       return NextResponse.json({
         allowed: true,
         plan: 'Admin',

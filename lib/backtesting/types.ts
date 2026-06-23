@@ -82,6 +82,7 @@ export interface BacktestPredictionRecord {
   model: BacktestModel;
   direction: 'UP' | 'DOWN' | 'NEUTRAL';
   confidence: number;
+  signalStrength?: 'NO_SIGNAL' | 'WEAK_SIGNAL' | 'MODERATE_SIGNAL' | 'STRONG_SIGNAL';
   predictedReturn: number;
   actualReturn: number;
   result: PredictionResult;
@@ -250,6 +251,19 @@ export interface AccuracyReport {
   calibrationBuckets: CalibrationBucket[];
   equityCurve: EquityPoint[];
   drawdownCurve: DrawdownPoint[];
+  beforeFiltering: {
+    accuracy: number;
+    winLossRatio: number;
+    medianError: number;
+    predictionCount: number;
+  };
+  afterFiltering: {
+    tradeableAccuracy: number;
+    winLossRatio: number;
+    medianError: number;
+    filteredPredictionCount: number;
+    noSignalCount: number;
+  };
 }
 
 export interface CalibrationBucket {
@@ -303,9 +317,10 @@ export interface ProfessionalReport {
   };
   sections: {
     accuracyByTimeframe: Record<string, number>;
-    accuracyByStock: { ticker: string; sector: string; accuracy: number; winRate: number; sharpe: number }[];
-    accuracyBySector: { sector: string; accuracy: number; winRate: number; tickerCount: number }[];
+    accuracyByStock: { ticker: string; label: string; verifiedCount: number; accuracy: number; winLossRatio: number; medianError: number; reliabilityGrade: string; warning: string }[];
+    accuracyBySector: { sector: string; label: string; verifiedCount: number; accuracy: number; winLossRatio: number; medianError: number; reliabilityGrade: string; warning: string }[];
     confidenceCalibration: CalibrationBucket[];
+    confidenceBucketPerformance: CalibrationBucket[];
     winLossRatio: Record<string, { wins: number; losses: number; ratio: number }>;
     drawdownAnalysis: {
       maxDrawdown: number;
@@ -323,6 +338,30 @@ export interface ProfessionalReport {
       beta: number;
       alpha: number;
     };
+    filteredMetrics: {
+      overallAccuracy: number;
+      tradeableAccuracy: number;
+      filteredPredictionsCount: number;
+      noSignalCount: number;
+      winLossRatioAfterFiltering: number;
+      accuracyBeforeFiltering: number;
+      accuracyAfterFiltering: number;
+      medianErrorBeforeFiltering: number;
+      medianErrorAfterFiltering: number;
+      targetAchieved: boolean;
+    };
+    failureAnalysis: {
+      dimension: string;
+      value: string;
+      failures: number;
+      total: number;
+      failureRate: number;
+      accuracy: number;
+      winLossRatio: number;
+      medianError: number;
+      reliabilityGrade: string;
+      warning: string;
+    }[];
     bestPerformingModel: ModelComparisonRow;
     optimizationRecommendations: OptimizationRecommendation[];
   };

@@ -19,7 +19,7 @@ function getDb() {
   db.pragma('cache_size = -64000'); // 64MB cache
 
   // Create tables if not exist
-  db.exec(`
+  if (db) db.exec(`
     CREATE TABLE IF NOT EXISTS ohlcv_cache (
       ticker    TEXT NOT NULL,
       date      TEXT NOT NULL,

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useServerInsertedHTML } from 'next/navigation';
 
 type Theme = 'light' | 'dark';
 
@@ -15,21 +16,57 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
+  useServerInsertedHTML(() => {
+    return (
+      <script
+        id="theme-initializer"
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                var stored = localStorage.getItem('sp_theme');
+                var theme = 'light';
+                if (stored) {
+                  theme = stored;
+                } else {
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  theme = prefersDark ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.style.colorScheme = theme;
+                if (theme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            })();
+          `,
+        }}
+      />
+    );
+  });
+
   useEffect(() => {
-    // Read current theme state set by head blocking script
     const currentDomTheme = document.documentElement.getAttribute('data-theme') as Theme | null;
+    let initialTheme: Theme = 'light';
     if (currentDomTheme) {
-      setTheme(currentDomTheme);
+      initialTheme = currentDomTheme;
     } else {
       const storedTheme = localStorage.getItem('sp_theme') as Theme | null;
       if (storedTheme) {
-        setTheme(storedTheme);
+        initialTheme = storedTheme;
       } else {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(prefersDark ? 'dark' : 'light');
+        initialTheme = prefersDark ? 'dark' : 'light';
       }
     }
-    setMounted(true);
+
+    const timer = setTimeout(() => {
+      setTheme(initialTheme);
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
