@@ -102,8 +102,8 @@ export default function DashboardPage() {
         const fetchedItems = await Promise.all(
           activeTickers.map(async (ticker) => {
             try {
-              const stockRes = await fetch(`/api/stock/${ticker}`, { cache: 'no-store' });
-              const predictRes = await fetch(`/api/predict/${ticker}`, { cache: 'no-store' });
+              const stockRes = await fetch(`/api/stock/${ticker}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+              const predictRes = await fetch(`/api/predict/${ticker}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
               
               if (stockRes.ok && predictRes.ok) {
                 const stock: StockData = await stockRes.json();

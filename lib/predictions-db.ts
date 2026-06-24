@@ -916,49 +916,27 @@ export const PredictionsDbService = {
     }
   },
 
-  async getAllPredictions(): Promise<PredictionRecord[]> {
+  async getAllPredictions(limit: number = 3000): Promise<PredictionRecord[]> {
     if (isSupabaseConfigured) {
       let lastError: { message: string } | null = null;
 
       for (let attempt = 0; attempt < 3; attempt++) {
-        let allData: any[] = [];
-        let hasMore = true;
-        let page = 0;
-        const pageSize = 1000;
-        const maxRecords = 50000;
-        let fetchError = null;
+        const { data, error } = await supabase
+          .from('predictions')
+          .select('*, prediction_explanations(*), prediction_metrics(*)')
+          .order('created_at', { ascending: false })
+          .limit(limit);
 
-        while (hasMore && allData.length < maxRecords) {
-          const { data, error } = await supabase
-            .from('predictions')
-            .select('*, prediction_explanations(*), prediction_metrics(*)')
-            .order('created_at', { ascending: false })
-            .range(page * pageSize, (page + 1) * pageSize - 1);
-
-          if (error) {
-            fetchError = error;
-            break;
-          }
-
-          if (data && data.length > 0) {
-            allData = allData.concat(data);
-            if (data.length < pageSize) hasMore = false;
-          } else {
-            hasMore = false;
-          }
-          page++;
-        }
-
-        if (!fetchError) {
-          return allData.map(record => ({
+        if (!error && data) {
+          return data.map(record => ({
             ...record,
             regime: record.market_regime || record.regime,
             explanation: Array.isArray(record.prediction_explanations) ? record.prediction_explanations[0] : record.prediction_explanations,
             metrics: Array.isArray(record.prediction_metrics) ? record.prediction_metrics[0] : record.prediction_metrics,
-          }));
+          })) as PredictionRecord[];
         }
-        
-        lastError = fetchError;
+
+        lastError = error;
         if (attempt < 2) {
           await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
         }

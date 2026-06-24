@@ -173,8 +173,8 @@ export default function AdminDashboardPage() {
       }
 
       const [statsRes, evaluationRes] = await Promise.all([
-        fetch(`/api/admin/accuracy-stats?timeframe=${tf}&t=${Date.now()}`, { headers, cache: 'no-store' }),
-        fetch(`/api/evaluate_model?batchSize=${batchSize}&t=${Date.now()}`, { headers, cache: 'no-store' }),
+        fetch(`/api/admin/accuracy-stats?timeframe=${tf}&t=${Date.now()}`, { headers, cache: 'no-store', signal: AbortSignal.timeout(10000) }),
+        fetch(`/api/evaluate_model?batchSize=${batchSize}&t=${Date.now()}`, { headers, cache: 'no-store', signal: AbortSignal.timeout(10000) }),
       ]);
 
       if (!statsRes.ok) {
@@ -487,11 +487,12 @@ export default function AdminDashboardPage() {
             }
           }
           
-          await loadAdminMetrics();
-          await runAudit(savedTuning ? JSON.parse(savedTuning) : DEFAULT_TUNING_CONFIG);
-          await loadAccuracyStats('ALL');
-          await loadIndicatorPerformance();
-          await loadRegimeStats();
+          // Do not await these so the page can render skeletons immediately
+          loadAdminMetrics().catch(console.error);
+          runAudit(savedTuning ? JSON.parse(savedTuning) : DEFAULT_TUNING_CONFIG).catch(console.error);
+          loadAccuracyStats('ALL').catch(console.error);
+          loadIndicatorPerformance().catch(console.error);
+          loadRegimeStats().catch(console.error);
         } else {
           setIsAdmin(false);
         }
