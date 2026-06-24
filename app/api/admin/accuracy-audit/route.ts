@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ...report,
       stalePredictionCount,
-      latestPredictionCount
+      latestPredictionCount,
+      totalPredictionsCount: allPredictions.length,
     });
   } catch (err: any) {
     console.error('Failed to run accuracy audit:', err);

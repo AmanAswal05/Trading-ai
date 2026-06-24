@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TickerSuggestion {
   symbol: string;
@@ -113,59 +114,70 @@ export default function SearchBar({ variant = 'default' }: SearchBarProps) {
         </div>
       </form>
 
-      {isOpen && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-border-custom bg-bg-card shadow-xl overflow-hidden z-35 animate-in fade-in slide-in-from-top-1 duration-150">
-          <div className={`${
-            isDefault ? 'px-4 py-2 text-[10px]' : 'px-3.5 py-1.5 text-[9px]'
-          } bg-bg-secondary font-bold text-text-muted uppercase border-b border-border-custom tracking-wider font-sans transition-theme`}>
-            {query.trim() === '' ? 'Popular Asset Tickers' : 'Search Results'}
-          </div>
-          <div className="max-h-72 overflow-y-auto">
-            {suggestions.map((s) => (
-              <button
-                key={s.symbol}
-                type="button"
-                onClick={() => handleSelect(s.symbol)}
-                className={`flex items-center justify-between w-full hover:bg-bg-card-hover transition-all duration-300 ease-in-out text-left border-b border-border-custom last:border-0 cursor-pointer group ${
-                  isDefault ? 'px-4.5 py-3.5' : 'px-3.5 py-2.5'
-                }`}
-              >
-                <div>
-                  <span className={`font-mono font-bold text-text-primary mr-3 bg-bg-secondary rounded border border-border-custom ${
-                    isDefault ? 'text-sm px-2 py-0.5' : 'text-xs px-1.5 py-0.5'
-                  }`}>
-                    {s.symbol}
-                  </span>
-                  <span className={`text-text-secondary font-medium ${
-                    isDefault ? 'text-xs' : 'text-[11px]'
-                  }`}>{s.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {s.probability && (
-                    <span className={`font-mono font-bold rounded text-[9px] px-1.5 py-0.5 tracking-wide flex items-center ${
-                      s.probability.direction === 'UP'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+      <AnimatePresence>
+        {isOpen && suggestions.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -5, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute top-full left-0 right-0 mt-3 rounded-2xl border border-border-custom bg-bg-card/90 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden z-35"
+          >
+            <div className={`${
+              isDefault ? 'px-4 py-2 text-[10px]' : 'px-3.5 py-1.5 text-[9px]'
+            } bg-bg-secondary/50 backdrop-blur-md font-bold text-text-muted uppercase border-b border-border-custom tracking-wider font-sans transition-theme`}>
+              {query.trim() === '' ? 'Popular Asset Tickers' : 'Search Results'}
+            </div>
+            <div className="max-h-72 overflow-y-auto scrollbar-hide">
+              {suggestions.map((s, index) => (
+                <motion.button
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.03, duration: 0.2 }}
+                  key={s.symbol}
+                  type="button"
+                  onClick={() => handleSelect(s.symbol)}
+                  className={`flex items-center justify-between w-full hover:bg-bg-card-hover transition-all duration-300 ease-in-out text-left border-b border-border-custom/50 last:border-0 cursor-pointer group ${
+                    isDefault ? 'px-4.5 py-3.5' : 'px-3.5 py-2.5'
+                  }`}
+                >
+                  <div>
+                    <span className={`font-mono font-bold text-text-primary mr-3 bg-bg-secondary/80 rounded border border-border-custom ${
+                      isDefault ? 'text-sm px-2 py-0.5' : 'text-xs px-1.5 py-0.5'
                     }`}>
-                      {s.probability.label}
+                      {s.symbol}
                     </span>
-                  )}
-                  <span className={`font-mono font-bold text-text-muted bg-bg-secondary/40 rounded uppercase ${
-                    isDefault ? 'text-[10px] px-1.5 py-0.5' : 'text-[9px] px-1 py-0.5'
-                  }`}>
-                    {s.exchange}
-                  </span>
-                  {isDefault ? (
-                    <ChevronRight className="w-4 h-4 text-text-muted transition-transform duration-300 ease-in-out group-hover:translate-x-[2px]" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5 text-text-muted transition-transform duration-300 ease-in-out group-hover:translate-x-[2px]" />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+                    <span className={`text-text-secondary font-medium group-hover:text-text-primary transition-colors ${
+                      isDefault ? 'text-xs' : 'text-[11px]'
+                    }`}>{s.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {s.probability && (
+                      <span className={`font-mono font-bold rounded text-[9px] px-1.5 py-0.5 tracking-wide flex items-center shadow-sm ${
+                        s.probability.direction === 'UP'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      }`}>
+                        {s.probability.label}
+                      </span>
+                    )}
+                    <span className={`font-mono font-bold text-text-muted bg-bg-secondary/40 rounded uppercase ${
+                      isDefault ? 'text-[10px] px-1.5 py-0.5' : 'text-[9px] px-1 py-0.5'
+                    }`}>
+                      {s.exchange}
+                    </span>
+                    {isDefault ? (
+                      <ChevronRight className="w-4 h-4 text-text-muted transition-transform duration-300 ease-in-out group-hover:translate-x-1 group-hover:text-accent-primary" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 text-text-muted transition-transform duration-300 ease-in-out group-hover:translate-x-1 group-hover:text-accent-primary" />
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

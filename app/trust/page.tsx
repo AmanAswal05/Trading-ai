@@ -325,7 +325,7 @@ export default function PublicTrustPanelPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border-custom/50">
-                        {stats.recentVerified.map((row: any) => {
+                        {stats.recentVerified.map((row: any, index: number) => {
                           const dateStr = new Date(row.prediction_date).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',
@@ -340,7 +340,7 @@ export default function PublicTrustPanelPage() {
                           };
 
                           return (
-                            <tr key={row.id} className="hover:bg-bg-secondary/35 text-text-secondary">
+                            <tr key={`${row.id}-${index}`} className="hover:bg-bg-secondary/35 text-text-secondary">
                               <td className="py-3 px-1 font-mono font-bold text-text-primary">{row.ticker}</td>
                               <td className="py-3">{dateStr}</td>
                               <td className="py-3 text-center font-mono font-bold text-[10px]">{row.timeframe}</td>

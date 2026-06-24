@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, react/no-unescaped-entities, @typescript-eslint/no-explicit-any */
 
 import React from 'react';
-import { Activity, RefreshCw, Sliders, Play, ShieldAlert, ShieldCheck, Database, Percent, CheckCircle2, AlertCircle, BarChart3 } from 'lucide-react';
+import { Activity, RefreshCw, Sliders, Play, ShieldAlert, ShieldCheck, Database, Percent, CheckCircle2, AlertCircle, BarChart3, XCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { AccuracyStats } from '@/lib/admin/types';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -127,6 +127,34 @@ export default function AccuracyTab(props: any) {
               >
                 <Database className={`w-3 h-3 ${runningMigration ? 'animate-spin' : ''}`} />
                 {runningMigration ? 'Applying...' : 'Fix Schema'}
+              </button>
+              
+              {/* Clear Stale Data */}
+              <button
+                onClick={async () => {
+                  if (!confirm('Are you sure you want to delete all stale fake mock predictions from the database? This cannot be undone.')) return;
+                  try {
+                    const res = await fetch('/api/admin/clear-mock-data', { method: 'POST' });
+                    if (!res.ok) throw new Error('Failed to clear mock data');
+                    loadAccuracyStats();
+                  } catch(e: any) {
+                    alert(e.message);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+              >
+                <XCircle className="w-3 h-3" />
+                Clear Stale Data
+              </button>
+
+              {/* Refresh Metrics */}
+              <button
+                onClick={loadAccuracyStats}
+                disabled={loadingAccuracy}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary hover:bg-bg-card border border-border-custom text-text-primary text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+              >
+                <RefreshCw className={`w-3 h-3 ${loadingAccuracy ? 'animate-spin' : ''}`} />
+                Refresh Metrics
               </button>
             </div>
           </div>

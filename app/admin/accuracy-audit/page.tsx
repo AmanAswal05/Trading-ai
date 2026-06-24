@@ -134,6 +134,47 @@ export default function AccuracyAuditPage() {
               </div>
             </div>
 
+            {/* Diagnostic Breakdown */}
+            <div className="bg-bg-card border border-border-custom rounded-xl p-5 shadow-lg">
+              <h3 className="font-bold text-lg mb-4 flex items-center justify-between">
+                <span>Database Diagnostics</span>
+                <button
+                  onClick={async () => {
+                    if (!confirm('Are you sure you want to delete all stale fake mock predictions from the database? This cannot be undone.')) return;
+                    try {
+                      const res = await fetch('/api/admin/clear-mock-data', { method: 'POST' });
+                      if (!res.ok) throw new Error('Failed to clear mock data');
+                      fetchReport();
+                    } catch(e: any) {
+                      alert(e.message);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+                >
+                  <XCircle className="w-3 h-3" />
+                  Clear Stale Mock Data
+                </button>
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                <div>
+                  <p className="text-sm text-text-secondary">Total Records in DB</p>
+                  <p className="text-xl font-mono mt-1">{report.totalPredictionsCount}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-text-secondary">Latest Engine Records</p>
+                  <p className="text-xl font-mono mt-1 text-accent-blue">{report.latestPredictionCount}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-text-secondary">Stale Engine Records</p>
+                  <p className="text-xl font-mono mt-1 text-yellow-500">{report.stalePredictionCount}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-text-secondary">Audited & Verified</p>
+                  <p className="text-xl font-mono mt-1 text-green-400">{report.totalVerified - report.mockExclusionCount}</p>
+                </div>
+              </div>
+            </div>
+
             {/* Calibration Stats */}
             <div className="bg-bg-card border border-border-custom rounded-xl p-5 shadow-lg">
               <h3 className="font-bold text-lg mb-4">Calibration Health Metrics</h3>

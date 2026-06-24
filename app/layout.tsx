@@ -4,6 +4,8 @@ import { CurrencyProvider } from '@/lib/currency-context';
 import Navbar from '@/components/ui/Navbar';
 import PageCover from '@/components/ui/PageCover';
 import ContextualHelp from '@/components/ui/ContextualHelp';
+import SmoothScroll from '@/components/ui/SmoothScroll';
+import Preloader from '@/components/ui/Preloader';
 import './globals.css';
 
 // System fallback font configurations for build stability in offline environments
@@ -31,12 +33,15 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen flex flex-col transition-colors duration-200" suppressHydrationWarning>
         <ThemeProvider>
           <CurrencyProvider>
-            <PageCover />
-            <Navbar />
-            <main className="flex-grow">
-              {children}
-            </main>
-            <ContextualHelp />
+            <Preloader />
+            <SmoothScroll>
+              <PageCover />
+              <Navbar />
+              <main className="flex-grow">
+                {children}
+              </main>
+              <ContextualHelp />
+            </SmoothScroll>
           </CurrencyProvider>
         </ThemeProvider>
       </body>
