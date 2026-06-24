@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
                     calibrationVersion: pred.calibrationVersion,
                     regimeVersion: pred.regimeVersion,
                     status: 'PENDING',
-                    created_at: new Date(predictionDateStr).toISOString(),
+                    created_at: new Date().toISOString(),
                     metrics: pred.probabilities ? {
                       bullish_probability: pred.probabilities.bullish,
                       bearish_probability: pred.probabilities.bearish,

@@ -173,8 +173,8 @@ export default function AdminDashboardPage() {
       }
 
       const [statsRes, evaluationRes] = await Promise.all([
-        fetch(`/api/admin/accuracy-stats?timeframe=${tf}`, { headers, cache: 'no-store' }),
-        fetch(`/api/evaluate_model?batchSize=${batchSize}`, { headers, cache: 'no-store' }),
+        fetch(`/api/admin/accuracy-stats?timeframe=${tf}&t=${Date.now()}`, { headers, cache: 'no-store' }),
+        fetch(`/api/evaluate_model?batchSize=${batchSize}&t=${Date.now()}`, { headers, cache: 'no-store' }),
       ]);
 
       if (!statsRes.ok) {
@@ -348,6 +348,15 @@ export default function AdminDashboardPage() {
         if (job.status === 'COMPLETED' || job.status === 'FAILED' || job.status === 'CANCELLED') {
           stopPollingProgress();
           setRunningBacktest(false);
+          
+          if (job.status === 'COMPLETED') {
+            showNotice('Backtest Completed', `Processed: ${job.recordsProcessed || 0}, Verified: ${job.recordsVerified || 0}, DB Writes: ${job.databaseWrites || 0}. Dashboard metrics have been refreshed with the latest data.`);
+          } else if (job.status === 'FAILED') {
+            showNotice('Backtest Failed', job.error || 'The backtesting job failed to complete.');
+          } else if (job.status === 'CANCELLED') {
+            showNotice('Backtest Cancelled', 'The backtesting job was cancelled by the user.');
+          }
+
           // Wait 3 seconds then clear jobId to hide modal
           setTimeout(() => {
             setActiveJobId(null);

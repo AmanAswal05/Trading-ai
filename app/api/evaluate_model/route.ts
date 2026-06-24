@@ -25,8 +25,20 @@ async function evaluate(request: NextRequest, requestedBatchSize?: unknown) {
   const allPredictions = await PredictionsDbService.getAllPredictions();
   const verified = allPredictions
     .filter(record => record.status === 'VERIFIED')
-    .sort((a, b) => Date.parse(a.verification_date ?? a.prediction_date) - Date.parse(b.verification_date ?? b.prediction_date))
-    .slice(-batchSize);
+    .sort((a, b) => {
+      const aCreated = a.created_at ? Date.parse(a.created_at) : 0;
+      const bCreated = b.created_at ? Date.parse(b.created_at) : 0;
+      if (aCreated !== bCreated) return bCreated - aCreated;
+      
+      const aVerif = a.verification_date ? Date.parse(a.verification_date) : 0;
+      const bVerif = b.verification_date ? Date.parse(b.verification_date) : 0;
+      if (aVerif !== bVerif) return bVerif - aVerif;
+      
+      const aPred = a.prediction_date ? Date.parse(a.prediction_date) : 0;
+      const bPred = b.prediction_date ? Date.parse(b.prediction_date) : 0;
+      return bPred - aPred;
+    })
+    .slice(0, batchSize);
 
   const analytics = buildPredictionAnalyticsReport(verified);
   const calibration = buildCalibrationCurve(verified);
