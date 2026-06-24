@@ -13,11 +13,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const startTime = Date.now();
     const searchParams = request.nextUrl.searchParams;
-    const timeframe = searchParams.get('timeframe') || 'ALL'; // 7D, 30D, 90D, 365D, ALL
+    const timeframe = searchParams.get('timeframe') || 'ALL';
 
     const origin = request.nextUrl.origin;
     const stats = await PredictionsDbService.getVerificationStats(timeframe, origin);
+
+    const fetchDuration = Date.now() - startTime;
+    if (fetchDuration > 2000) {
+      console.warn(`[SLOW ENDPOINT] /api/admin/accuracy-stats took ${fetchDuration}ms for timeframe ${timeframe}`);
+    }
 
     return NextResponse.json(stats);
   } catch (err: any) {

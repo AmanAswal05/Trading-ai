@@ -952,6 +952,43 @@ export const PredictionsDbService = {
     }
   },
 
+  async getVerifiedPredictions(limit: number = 3000): Promise<PredictionRecord[]> {
+    if (isSupabaseConfigured) {
+      let lastError: { message: string } | null = null;
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { data, error } = await supabase
+          .from('predictions')
+          .select('*, prediction_explanations(*), prediction_metrics(*)')
+          .eq('status', 'VERIFIED')
+          .order('created_at', { ascending: false })
+          .limit(limit);
+
+        if (!error && data) {
+          return data.map(record => ({
+            ...record,
+            regime: record.market_regime || record.regime,
+            explanation: Array.isArray(record.prediction_explanations) ? record.prediction_explanations[0] : record.prediction_explanations,
+            metrics: Array.isArray(record.prediction_metrics) ? record.prediction_metrics[0] : record.prediction_metrics,
+          })) as PredictionRecord[];
+        }
+
+        lastError = error;
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+        }
+      }
+
+      console.warn(
+        `[PredictionsDbService] Supabase verified predictions unavailable after retries (${lastError?.message}). Using local analytics data.`
+      );
+      return readMockDb().filter(p => p.status === 'VERIFIED').slice(0, limit);
+    } else {
+      // Mock mode
+      return readMockDb().filter(p => p.status === 'VERIFIED').slice(0, limit);
+    }
+  },
+
   // Automatic verification of expired predictions
   async autoVerifyExpired(origin: string): Promise<number> {
     try {

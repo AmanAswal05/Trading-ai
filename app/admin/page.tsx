@@ -172,43 +172,81 @@ export default function AdminDashboardPage() {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
-      const [statsRes, evaluationRes] = await Promise.all([
+      const results = await Promise.allSettled([
         fetch(`/api/admin/accuracy-stats?timeframe=${tf}&t=${Date.now()}`, { headers, cache: 'no-store', signal: AbortSignal.timeout(10000) }),
         fetch(`/api/evaluate_model?batchSize=${batchSize}&t=${Date.now()}`, { headers, cache: 'no-store', signal: AbortSignal.timeout(10000) }),
       ]);
 
-      if (!statsRes.ok) {
-        const errorData = await statsRes.json().catch(() => null);
-        throw new Error(errorData?.error || `Failed to load verified accuracy statistics (${statsRes.status})`);
+      const [statsResult, evalResult] = results;
+
+      let baseData: any = {};
+      let evaluationData: any = null;
+      let errorMessage = '';
+
+      if (statsResult.status === 'fulfilled') {
+        if (statsResult.value.ok) {
+          baseData = await statsResult.value.json();
+        } else {
+          errorMessage = `Failed to load basic accuracy stats (${statsResult.value.status})`;
+        }
+      } else {
+        const reason = String(statsResult.reason).toLowerCase();
+        if (reason.includes('timeout') || reason.includes('abort')) {
+          errorMessage = 'Evaluation data timed out. Click Refresh Metrics to retry.';
+        } else {
+          errorMessage = 'Failed to fetch basic accuracy stats.';
+        }
       }
 
-      const data = await statsRes.json();
-      const evaluation = evaluationRes.ok ? await evaluationRes.json() : null;
-      setAccuracyStats(evaluation ? {
-        ...data,
-        overallModelAccuracy: evaluation.overallAccuracy,
-        tradeableAccuracy: evaluation.tradeableAccuracy,
-        winLossRatioAfterFiltering: evaluation.winLossRatioAfterFiltering,
-        medianError: evaluation.medianError,
-        medianErrorAfterFiltering: evaluation.medianErrorAfterFiltering,
-        targetAchieved: evaluation.targetAchieved,
-        brierScore: evaluation.brierScore,
-        reliabilityCurve: evaluation.reliabilityCurve,
-        // New calibration fields from the ensemble pipeline.
-        tradeableCount: evaluation.tradeableCount ?? evaluation.tradeablePredictionsCount ?? 0,
-        calibrationError: evaluation.calibrationError,
-        confidenceCalibration: (evaluation.reliabilityCurve || []).map((bucket: Record<string, any>) => ({
-          bucket: bucket.range ?? bucket.bucket ?? `${Number(bucket.rangeMin ?? 0).toFixed(2)}-${Number(bucket.rangeMax ?? 0).toFixed(2)}`,
-          total: bucket.sampleSize ?? bucket.total ?? 0,
-          expectedAccuracy: bucket.predictedConfidence ?? bucket.expectedAccuracy ?? bucket.calibratedValue ?? 0,
-          actualAccuracy: bucket.actualAccuracy ?? bucket.winRate ?? null,
-          calibrationError: bucket.calibrationError ?? bucket.calGap ?? null,
-          reliability: bucket.reliability ?? ((bucket.total ?? bucket.sampleSize ?? 0) < 20 ? 'UNRELIABLE' : 'RELIABLE'),
-        })),
-      } : data);
+      if (evalResult.status === 'fulfilled') {
+        if (evalResult.value.ok) {
+          evaluationData = await evalResult.value.json();
+        } else if (!errorMessage) {
+          errorMessage = `Failed to load detailed model metrics (${evalResult.value.status})`;
+        }
+      } else if (!errorMessage) {
+        const reason = String(evalResult.reason).toLowerCase();
+        if (reason.includes('timeout') || reason.includes('abort')) {
+          errorMessage = 'Evaluation data timed out. Click Refresh Metrics to retry.';
+        } else {
+          errorMessage = 'Failed to fetch detailed model metrics.';
+        }
+      }
+
+      if (errorMessage) {
+        setAccuracyError(errorMessage);
+      }
+
+      setAccuracyStats({
+        ...baseData,
+        ...(evaluationData ? {
+          overallModelAccuracy: evaluationData.overallAccuracy,
+          tradeableAccuracy: evaluationData.tradeableAccuracy,
+          winLossRatioAfterFiltering: evaluationData.winLossRatioAfterFiltering,
+          medianError: evaluationData.medianError,
+          medianErrorAfterFiltering: evaluationData.medianErrorAfterFiltering,
+          targetAchieved: evaluationData.targetAchieved,
+          brierScore: evaluationData.brierScore,
+          reliabilityCurve: evaluationData.reliabilityCurve,
+          tradeableCount: evaluationData.tradeableCount ?? evaluationData.tradeablePredictionsCount ?? 0,
+          calibrationError: evaluationData.calibrationError,
+          confidenceCalibration: (evaluationData.reliabilityCurve || []).map((bucket: Record<string, any>) => ({
+            bucket: bucket.range ?? bucket.bucket ?? `${Number(bucket.rangeMin ?? 0).toFixed(2)}-${Number(bucket.rangeMax ?? 0).toFixed(2)}`,
+            total: bucket.sampleSize ?? bucket.total ?? 0,
+            expectedAccuracy: bucket.predictedConfidence ?? bucket.expectedAccuracy ?? bucket.calibratedValue ?? 0,
+            actualAccuracy: bucket.actualAccuracy ?? bucket.winRate ?? null,
+            calibrationError: bucket.calibrationError ?? bucket.calGap ?? null,
+            reliability: bucket.reliability ?? ((bucket.total ?? bucket.sampleSize ?? 0) < 20 ? 'UNRELIABLE' : 'RELIABLE'),
+          })),
+        } : {})
+      });
     } catch (err: unknown) {
-      console.warn('Accuracy statistics unavailable:', (err instanceof Error ? err.message : String(err)) || err);
-      setAccuracyError((err instanceof Error ? err.message : String(err)) || 'Failed to load accuracy stats.');
+      console.warn('Accuracy statistics unavailable:', err);
+      let errMsg = (err instanceof Error ? err.message : String(err)) || 'Failed to load accuracy stats.';
+      if (errMsg.toLowerCase().includes('timeout') || errMsg.toLowerCase().includes('abort')) {
+         errMsg = 'Evaluation data timed out. Click Refresh Metrics to retry.';
+      }
+      setAccuracyError(errMsg);
     } finally {
       setLoadingAccuracy(false);
     }

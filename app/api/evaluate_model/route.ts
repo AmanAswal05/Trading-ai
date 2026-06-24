@@ -22,9 +22,13 @@ async function evaluate(request: NextRequest, requestedBatchSize?: unknown) {
     );
   }
 
-  const allPredictions = await PredictionsDbService.getAllPredictions();
-  const verified = allPredictions
-    .filter(record => record.status === 'VERIFIED')
+  const startTime = Date.now();
+  const limit = Math.min(batchSize * 2, 50000); // Fetch enough to sort by date
+  
+  // Requirement 4 & 5: use fast database reads and pass limit
+  const verifiedRows = await PredictionsDbService.getVerifiedPredictions(limit);
+  
+  const verified = verifiedRows
     .sort((a, b) => {
       const aCreated = a.created_at ? Date.parse(a.created_at) : 0;
       const bCreated = b.created_at ? Date.parse(b.created_at) : 0;
@@ -39,6 +43,12 @@ async function evaluate(request: NextRequest, requestedBatchSize?: unknown) {
       return bPred - aPred;
     })
     .slice(0, batchSize);
+
+  // Requirement 10: Log the slow endpoint and duration on server side
+  const fetchDuration = Date.now() - startTime;
+  if (fetchDuration > 2000) {
+    console.warn(`[SLOW ENDPOINT] /api/evaluate_model took ${fetchDuration}ms to fetch ${verifiedRows.length} rows`);
+  }
 
   const analytics = buildPredictionAnalyticsReport(verified);
   const calibration = buildCalibrationCurve(verified);
