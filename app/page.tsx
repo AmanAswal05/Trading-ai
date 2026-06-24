@@ -7,7 +7,9 @@ import { BrainCircuit, ChevronRight, History, TrendingUp } from 'lucide-react';
 import { useCurrency } from '@/lib/currency-context';
 import { useEffect, useState } from 'react';
 import { motion, Variants } from 'framer-motion';
-import CanvasBackground from '@/components/ui/CanvasBackground';
+import dynamic from 'next/dynamic';
+
+const CanvasBackground = dynamic(() => import('@/components/ui/CanvasBackground'), { ssr: false });
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
