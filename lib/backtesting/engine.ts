@@ -21,7 +21,7 @@ function getDateRange(timeframe: string): { startDate: string; endDate: string }
   
   const mapping: Record<string, number> = {
     '1D': 1/365, '7D': 7/365, '30D': 30/365, '90D': 90/365, '365D': 1,
-    '1Y': 1, '3Y': 3, '5Y': 5, '10Y': 10,
+    '1Y': 1, '2Y': 2, '3Y': 3, '5Y': 5, '10Y': 10,
   };
   
   const years = mapping[timeframe] || 1;
@@ -138,8 +138,23 @@ async function simulateTrading(
   
   let currentPosition: { price: number, size: number, type: 'UP' | 'DOWN', model: BacktestModel, date: string, confidence: number } | null = null;
   
-  // Need at least 200 bars for SMA200 indicator
-  const startIndex = 200; 
+  // Debug tracking
+  const debugStats = {
+    candlesLoaded: bars.length,
+    signalsGenerated: 0,
+    tradesOpened: 0,
+    tradesClosed: 0,
+    tradesRejected: 0,
+    rejectionReasons: {} as Record<string, number>
+  };
+
+  const trackRejection = (reason: string) => {
+    debugStats.tradesRejected++;
+    debugStats.rejectionReasons[reason] = (debugStats.rejectionReasons[reason] || 0) + 1;
+  };
+
+  // Need at least 200 bars for SMA200 indicator. If less than 200, we start at 50 (or whatever is available) to avoid skipping everything.
+  const startIndex = Math.min(200, Math.max(50, Math.floor(bars.length / 2))); 
   
   for (let i = startIndex; i < bars.length; i++) {
     const bar = bars[i];
@@ -182,6 +197,7 @@ async function simulateTrading(
           confidence: currentPosition.confidence,
         });
         
+        debugStats.tradesClosed++;
         currentPosition = null;
       }
     }
@@ -198,21 +214,38 @@ async function simulateTrading(
     });
 
     // Check for entries
-    if (!currentPosition && (!config.maxTrades || trades.length < config.maxTrades)) {
+    if (!currentPosition) {
+      if (config.maxTrades && trades.length >= config.maxTrades) {
+        // Stop evaluating new entries if max trades reached
+        continue;
+      }
+      
       const indicators = computeIndicatorsFromHistory(bars as any, i);
-      if (!indicators) continue;
+      if (!indicators) {
+        trackRejection('No indicators available');
+        continue;
+      }
 
       const model = config.models[0] || 'V1';
       const prediction = generatePrediction(
         ticker, price, bar.volume, bars.slice(0, i+1) as any, indicators as any, undefined, model as any, config.predictionHorizon
       );
 
-      if (prediction.confidence >= confidenceFilter && prediction.direction !== 'NEUTRAL') {
+      if (prediction.direction !== 'NEUTRAL') {
+        debugStats.signalsGenerated++;
+        
+        if (prediction.confidence < confidenceFilter) {
+          trackRejection(`Confidence too low (${prediction.confidence} < ${confidenceFilter})`);
+          continue;
+        }
+
         // Apply Signal Strength Filter
         if (config.signalStrengthFilter === 'STRONG_ONLY' && prediction.signalStrength !== 'STRONG_SIGNAL') {
+          trackRejection(`Signal strength too weak (${prediction.signalStrength})`);
           continue;
         }
         if (config.signalStrengthFilter === 'MODERATE_STRONG' && prediction.signalStrength === 'WEAK_SIGNAL') {
+          trackRejection(`Signal strength too weak (${prediction.signalStrength})`);
           continue;
         }
 
@@ -225,6 +258,7 @@ async function simulateTrading(
           date: bar.date,
           confidence: prediction.confidence
         };
+        debugStats.tradesOpened++;
 
         records.push({
           date: bar.date,
@@ -287,7 +321,8 @@ async function simulateTrading(
     drawdownCurve: metrics.drawdownCurve,
     
     sourceUsed,
-    failedSourceLogs
+    failedSourceLogs,
+    debugStats
   };
 }
 

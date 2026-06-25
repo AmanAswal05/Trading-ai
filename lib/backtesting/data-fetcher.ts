@@ -167,7 +167,7 @@ export function computeIndicatorsFromHistory(
   history: OHLCVBar[],
   index: number
 ): Record<string, any> | null {
-  if (index < 200) return null; // Need at least 200 bars for SMA200
+  if (index < 20) return null; // Need at least 20 bars for basic indicators
 
   const slice = history.slice(0, index + 1);
   const closes = slice.map(b => b.adjClose ?? b.close);
@@ -178,8 +178,8 @@ export function computeIndicatorsFromHistory(
 
   // SMAs
   const sma20 = mean(closes.slice(-20));
-  const sma50 = mean(closes.slice(-50));
-  const sma200 = mean(closes.slice(-200));
+  const sma50 = closes.length >= 50 ? mean(closes.slice(-50)) : mean(closes);
+  const sma200 = closes.length >= 200 ? mean(closes.slice(-200)) : mean(closes);
 
   // EMAs
   const ema12 = computeEMA(closes, 12);

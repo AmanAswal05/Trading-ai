@@ -116,6 +116,11 @@ export default function ResultsDashboard({ report }: { report: ProfessionalRepor
         <div className="metric-card">
           <div className="metric-title">Total Trades</div>
           <div className="metric-val">{result.totalTrades}</div>
+          {result.totalTrades === 0 && (
+            <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px' }}>
+              Check debug panel for reason.
+            </div>
+          )}
         </div>
       </div>
 
@@ -202,6 +207,30 @@ export default function ResultsDashboard({ report }: { report: ProfessionalRepor
           </div>
         )}
       </div>
+
+      {/* Debug Mode Panel */}
+      {result.debugStats && (
+        <div className="chart-section" style={{ border: '1px dashed #fbbf24' }}>
+          <h3 style={{ color: '#fbbf24' }}>⚙️ Debug Mode</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <div><strong>Candles Loaded:</strong> {result.debugStats.candlesLoaded}</div>
+            <div><strong>Signals Generated:</strong> {result.debugStats.signalsGenerated}</div>
+            <div><strong>Trades Opened:</strong> {result.debugStats.tradesOpened}</div>
+            <div><strong>Trades Closed:</strong> {result.debugStats.tradesClosed}</div>
+            <div><strong>Trades Rejected:</strong> {result.debugStats.tradesRejected}</div>
+          </div>
+          {Object.keys(result.debugStats.rejectionReasons || {}).length > 0 && (
+            <div style={{ marginTop: '16px' }}>
+              <strong style={{ color: '#ef4444' }}>Rejection Reasons:</strong>
+              <ul style={{ margin: '8px 0 0 20px', color: '#94a3b8' }}>
+                {Object.entries(result.debugStats.rejectionReasons).map(([reason, count]) => (
+                  <li key={reason}>{reason}: {count as number} time(s)</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       <style>{`
         .dashboard { padding: 20px; color: #f1f5f9; display: flex; flex-direction: column; gap: 24px; }

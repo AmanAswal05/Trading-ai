@@ -171,6 +171,16 @@ export interface TickerBacktestResult {
   // Source tracking
   sourceUsed?: string;
   failedSourceLogs?: string[];
+
+  // Debug Stats
+  debugStats?: {
+    candlesLoaded: number;
+    signalsGenerated: number;
+    tradesOpened: number;
+    tradesClosed: number;
+    tradesRejected: number;
+    rejectionReasons: Record<string, number>;
+  };
 }
 
 export interface RegimeStats {
