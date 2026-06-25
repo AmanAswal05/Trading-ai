@@ -1,6 +1,6 @@
 // ─── Backtesting Lab — Type Definitions ───────────────────────────────────────
 
-export type BacktestTimeframe = '1Y' | '3Y' | '5Y' | '10Y' | '20Y' | '30Y' | '40Y' | '50Y';
+export type BacktestTimeframe = '1D' | '7D' | '30D' | '90D' | '365D' | '1Y' | '3Y' | '5Y' | '10Y';
 export type BacktestModel = 'V1' | 'V2' | 'V3' | 'REGIME' | 'META' | 'ALL';
 export type BacktestStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 export type PredictionResult = 'CORRECT' | 'INCORRECT' | 'PARTIALLY_CORRECT' | 'PENDING';
@@ -20,11 +20,21 @@ export interface BacktestConfig {
   id: string;
   name: string;
   timeframe: BacktestTimeframe;
+  dataSource?: 'AUTO' | 'STOOQ' | 'YAHOO' | 'ALPHA_VANTAGE';
+  startDate?: string;
+  endDate?: string;
   models: BacktestModel[];
   tickerMode: 'SINGLE' | 'MULTIPLE' | 'SECTOR' | 'MARKET';
   tickers: string[];
   sector?: string;
   predictionHorizon: '1D' | '7D' | '30D' | '90D';
+  initialCapital: number;
+  positionSizing: number;
+  stopLoss: number;
+  takeProfit: number;
+  confidenceFilter: number;
+  signalStrengthFilter: 'ALL' | 'MODERATE_STRONG' | 'STRONG_ONLY';
+  maxTrades: number;
   walkForward: boolean;
   walkForwardConfig?: WalkForwardConfig;
   monteCarloEnabled: boolean;
@@ -60,10 +70,10 @@ export interface BacktestJob {
   error?: string;
   totalTickers: number;
   completedTickers: number;
+  logs?: string[];
 }
 
 // ─── OHLCV Data ───────────────────────────────────────────────────────────────
-
 export interface OHLCVBar {
   date: string;        // YYYY-MM-DD
   open: number;
@@ -72,6 +82,26 @@ export interface OHLCVBar {
   close: number;
   volume: number;
   adjClose?: number;
+  source?: string;
+}
+
+// ─── Single Trade Record ──────────────────────────────────────────────────────
+
+export interface BacktestTrade {
+  tradeId: string;
+  date: string;
+  ticker: string;
+  model: BacktestModel;
+  direction: 'UP' | 'DOWN';
+  entryPrice: number;
+  exitPrice: number;
+  exitDate: string;
+  returnPct: number;
+  profitAmount: number;
+  isWin: boolean;
+  regime: MarketRegime;
+  exitReason: 'TAKE_PROFIT' | 'STOP_LOSS' | 'TIME_EXIT';
+  confidence: number;
 }
 
 // ─── Single Prediction Record (for backtesting) ───────────────────────────────
@@ -101,28 +131,46 @@ export interface BacktestPredictionRecord {
 export interface TickerBacktestResult {
   ticker: string;
   sector: string;
+  
+  // Performance
+  totalTrades: number;
+  winRate: number;
+  lossRate: number;
+  profitAndLoss: number;
+  cagr: number;
+  maxDrawdown: number;
+  sharpeRatio: number;
+  averageWin: number;
+  averageLoss: number;
+  winLossRatio: number;
+  
+  // Original Stats
   totalPredictions: number;
   verifiedPredictions: number;
   correctCount: number;
   incorrectCount: number;
   partialCount: number;
   neutralCount: number;
-  accuracy: number;         // %
-  winRate: number;          // %
-  lossRate: number;         // %
+  accuracy: number;
   precision: number;
   recall: number;
   f1Score: number;
-  averageError: number;     // mean absolute return error
+  averageError: number;
   medianError: number;
-  maxDrawdown: number;      // %
-  sharpeRatio: number;
-  sortinorRatio: number;
-  calmarRatio: number;
-  confidenceCalibrationError: number; // mean calibration error (ECE)
+  
+  confidenceCalibrationError: number;
   regimeBreakdown: Record<MarketRegime, RegimeStats>;
-  timeframeBreakdown: Record<string, number>; // horizon → accuracy
+  timeframeBreakdown: Record<string, number>;
+  
+  // Trades and curves
   records: BacktestPredictionRecord[];
+  trades: BacktestTrade[];
+  equityCurve: EquityPoint[];
+  drawdownCurve: DrawdownPoint[];
+  
+  // Source tracking
+  sourceUsed?: string;
+  failedSourceLogs?: string[];
 }
 
 export interface RegimeStats {

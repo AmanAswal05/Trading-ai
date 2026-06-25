@@ -139,7 +139,8 @@ export function putCache(ticker: string, bars: OHLCVBar[]): void {
   const insert = d.prepare(INSERT_BAR);
   const insertMany = d.transaction((rows: OHLCVBar[]) => {
     for (const bar of rows) {
-      insert.run(ticker, bar.date, bar.open, bar.high, bar.low, bar.close, bar.volume, bar.adjClose ?? bar.close);
+      if (bar.open == null || isNaN(bar.open) || bar.close == null || isNaN(bar.close)) continue;
+      insert.run(ticker, bar.date, bar.open, bar.high ?? bar.close, bar.low ?? bar.close, bar.close, bar.volume ?? 0, bar.adjClose ?? bar.close);
     }
   });
   insertMany(bars);
@@ -302,3 +303,4 @@ export function getResults(jobId: string): any | null {
     return null;
   }
 }
+export function getHistory() { if (typeof window !== 'undefined') return []; try { const d = getDb(); return d.prepare('SELECT id, status, progress, created_at FROM backtest_jobs ORDER BY created_at DESC LIMIT 50').all(); } catch { return []; } }
