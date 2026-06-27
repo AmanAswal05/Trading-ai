@@ -181,6 +181,9 @@ export interface TickerBacktestResult {
     tradesRejected: number;
     rejectionReasons: Record<string, number>;
   };
+
+  // Advanced Analytics
+  advancedAnalytics?: AdvancedAnalytics;
 }
 
 export interface RegimeStats {
@@ -342,6 +345,54 @@ export interface DrawdownPoint {
   date: string;
   drawdown: number;
   underwater: boolean;
+}
+
+// ─── Advanced Analytics ───────────────────────────────────────────────────────
+
+export interface AdvancedAnalytics {
+  profitFactor: number;
+  averageWinningTradePct: number;
+  averageWinningTradeAmount: number;
+  averageLosingTradePct: number;
+  averageLosingTradeAmount: number;
+  expectancyPct: number;
+  expectancyAmount: number;
+  largestWinningTrade: { returnPct: number; amount: number; date: string; ticker: string } | null;
+  largestLosingTrade: { returnPct: number; amount: number; date: string; ticker: string } | null;
+  maxConsecutiveWins: number;
+  maxConsecutiveLosses: number;
+  monthlyReturns: { year: number; month: number; returnPct: number }[];
+  benchmark: {
+    startingPrice: number;
+    endingPrice: number;
+    returnPct: number;
+    cagr: number;
+    maxDrawdown: number;
+    equityCurve: EquityPoint[];
+    alpha: number;
+  };
+  tradeDuration: {
+    averageDays: number;
+    shortestDays: number;
+    longestDays: number;
+    medianDays: number;
+    distribution: { bucket: string; count: number }[];
+  };
+  annualPerformance: {
+    year: number;
+    totalTrades: number;
+    winRate: number;
+    totalReturn: number;
+    bestTrade: number;
+    worstTrade: number;
+    maxDrawdown: number;
+    endingEquity: number;
+  }[];
+  returnDistribution: { bucket: string; count: number }[];
+  confidenceAnalysis: {
+    available: boolean;
+    buckets?: { range: string; winRate: number; avgReturn: number; count: number }[];
+  };
 }
 
 // ─── Optimization Recommendations ─────────────────────────────────────────────

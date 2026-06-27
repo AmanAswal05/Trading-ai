@@ -11,6 +11,7 @@ import { fetchMarketData } from '../market-data/provider';
 import { OHLCVData } from '../market-data/types';
 import { updateJobStatus, getCached, putCache, isCacheWarm } from './data-cache';
 import { calculateMetrics } from './metrics';
+import { calculateAdvancedAnalytics } from './advanced-metrics';
 import { computeIndicatorsFromHistory } from './data-fetcher';
 import { generatePrediction } from '../prediction-engine';
 import { getStockSector } from './stock-universe';
@@ -283,7 +284,9 @@ async function simulateTrading(
     }
   }
 
-  const metrics = calculateMetrics(config.initialCapital || 10000, trades, equityCurve);
+  const initialCapital = config.initialCapital || 10000;
+  const metrics = calculateMetrics(initialCapital, trades, equityCurve);
+  const advancedAnalytics = calculateAdvancedAnalytics(initialCapital, trades, equityCurve, bars.slice(startIndex));
 
   return {
     ticker,
@@ -322,7 +325,8 @@ async function simulateTrading(
     
     sourceUsed,
     failedSourceLogs,
-    debugStats
+    debugStats,
+    advancedAnalytics
   };
 }
 
