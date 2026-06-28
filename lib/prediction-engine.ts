@@ -452,10 +452,12 @@ export function generatePrediction(
   // Combine base score, ensemble confidence and agreement
   let rawConfidence = Math.round(baseConfidence * 0.4 + ensemble.finalConfidence * 0.4 + ensemble.agreementScore * 0.2);
 
-  // Volatility Adjuster: higher ATR reduces confidence slightly
+  // Volatility Adjuster: higher ATR reduces confidence significantly
   const atrRatio = atr14 / price;
   if (atrRatio > 0.03) {
-    rawConfidence = Math.max(0, rawConfidence - 8);
+    rawConfidence = Math.max(0, rawConfidence - 20);
+  } else if (atrRatio > 0.02) {
+    rawConfidence = Math.max(0, rawConfidence - 10);
   } else if (atrRatio < 0.01) {
     rawConfidence = Math.min(100, rawConfidence + 3);
   }
@@ -490,6 +492,13 @@ export function generatePrediction(
     multiTimeframeAdjustedConfidence = Math.min(multiTimeframeAdjustedConfidence, 45); // Hard cap on weak features
   } else if (featureQualityScore > 75) {
     multiTimeframeAdjustedConfidence = Math.min(100, multiTimeframeAdjustedConfidence + 5); // Boost on strong features
+  }
+  
+  // Stricter calibration for high confidence
+  if (multiTimeframeAdjustedConfidence >= 80) {
+    if (featureQualityScore < 65 || (ensembleMetrics && ensembleMetrics.modelAgreementScore < 80)) {
+      multiTimeframeAdjustedConfidence = 70 + (multiTimeframeAdjustedConfidence - 70) * 0.3;
+    }
   }
   
   // Use MTF adjusted confidence as the starting point for statistical calibration

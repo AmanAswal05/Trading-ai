@@ -8,9 +8,13 @@ async function main() {
   console.log('Fetching verified predictions...');
 
   const allPredictions = await PredictionsDbService.getAllPredictions();
-  const verified = allPredictions.filter(p => p.status === 'VERIFIED');
+  
+  // Filter for real fresh predictions only, ignoring potentially edited old ones
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 14); // Only check last 14 days of predictions
+  const verified = allPredictions.filter(p => p.status === 'VERIFIED' && new Date(p.created_at) >= cutoffDate);
 
-  console.log(`Found ${verified.length} verified predictions in the database.`);
+  console.log(`Found ${verified.length} verified predictions in the database (recent only).`);
   console.log('Running audit logic...\n');
 
   const report = runAccuracyAudit(verified);
@@ -25,8 +29,11 @@ async function main() {
   console.log('--- METRICS ---');
   console.log(`Total Verified        : ${report.totalVerified}`);
   console.log(`Mock/Fallback Excluded: ${report.mockExclusionCount}`);
+  console.log(`NO_TRADE Signals      : ${report.noTradeSignalsCount}`);
   console.log(`Overall Accuracy      : ${report.overallAccuracy}%`);
   console.log(`Tradeable Accuracy    : ${report.tradeableAccuracy}%`);
+  console.log(`Win/Loss Ratio        : ${report.winLossRatio}`);
+  console.log(`Median Error          : ${report.medianError}%`);
   console.log(`Avg Conf (Correct)    : ${report.averageConfidenceCorrect.toFixed(1)}`);
   console.log(`Avg Conf (Incorrect)  : ${report.averageConfidenceIncorrect.toFixed(1)}`);
   console.log(`Calibration Error     : ${report.calibrationError}\n`);

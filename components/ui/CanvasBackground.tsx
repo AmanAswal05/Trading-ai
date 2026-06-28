@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -10,8 +10,8 @@ function ParticleField() {
   
   // Create random points in a sphere
   const count = 3000;
-  const positions = useMemo(() => {
-    const positions = new Float32Array(count * 3);
+  const [positions] = useState(() => {
+    const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const radius = 10 + Math.random() * 20;
       const theta = 2 * Math.PI * Math.random();
@@ -21,12 +21,12 @@ function ParticleField() {
       const y = radius * Math.sin(phi) * Math.sin(theta);
       const z = radius * Math.cos(phi);
 
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
+      pos[i * 3] = x;
+      pos[i * 3 + 1] = y;
+      pos[i * 3 + 2] = z;
     }
-    return positions;
-  }, [count]);
+    return pos;
+  });
 
   useFrame((state, delta) => {
     if (ref.current) {

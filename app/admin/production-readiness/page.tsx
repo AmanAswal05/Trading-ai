@@ -5,6 +5,24 @@ import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, RefreshCw, ShieldCheck } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
+const CheckItem = ({ label, passed, desc }: { label: string, passed: boolean | 'WARNING', desc?: string }) => {
+  return (
+    <div className={`p-4 rounded-xl border flex items-start gap-3 ${passed === true ? 'bg-green-500/10 border-green-500/30' : passed === 'WARNING' ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+      {passed === true ? (
+        <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+      ) : passed === 'WARNING' ? (
+        <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+      ) : (
+        <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+      )}
+      <div>
+        <h4 className={`font-bold ${passed === true ? 'text-green-400' : passed === 'WARNING' ? 'text-yellow-400' : 'text-red-400'}`}>{label}</h4>
+        {desc && <p className="text-sm text-text-secondary mt-1">{desc}</p>}
+      </div>
+    </div>
+  );
+};
+
 export default function ProductionReadinessPage() {
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -27,24 +45,6 @@ export default function ProductionReadinessPage() {
   useEffect(() => {
     fetchReport();
   }, []);
-
-  const CheckItem = ({ label, passed, desc }: { label: string, passed: boolean | 'WARNING', desc?: string }) => {
-    return (
-      <div className={`p-4 rounded-xl border flex items-start gap-3 ${passed === true ? 'bg-green-500/10 border-green-500/30' : passed === 'WARNING' ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-        {passed === true ? (
-          <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-        ) : passed === 'WARNING' ? (
-          <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
-        ) : (
-          <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-        )}
-        <div>
-          <h4 className={`font-bold ${passed === true ? 'text-green-400' : passed === 'WARNING' ? 'text-yellow-400' : 'text-red-400'}`}>{label}</h4>
-          {desc && <p className="text-sm text-text-secondary mt-1">{desc}</p>}
-        </div>
-      </div>
-    );
-  };
 
   const allPassed = report && Object.values(report.badges).every(b => b === 'PASS') && report.mockExclusionCount === 0;
 

@@ -1206,12 +1206,35 @@ def build_tradeable_mask(
         if "adaptive_probability_threshold" in frame.columns
         else min_prob_thresh
     )
+    # 1. confidence below 65 = NO_TRADE
+    effective_threshold = np.maximum(effective_threshold, 0.65)
     meets_prob = confidence >= effective_threshold
     
     meets_hist_acc = frame["historical_accuracy"].ge(min_hist_acc)
     meets_hist_wlr = frame["historical_win_loss_ratio"].ge(min_hist_wlr)
     meets_edge = meets_hist_acc & meets_hist_wlr
+
     mask = meets_timeframe & meets_sample_size & meets_prob & meets_edge
+
+    # 2. very high ATR / volatility = NO_TRADE
+    if "volatility_regime" in frame.columns:
+        mask &= (frame["volatility_regime"] != "HIGH_VOLATILITY")
+    if "volatility_level" in frame.columns:
+        mask &= (frame["volatility_level"] != "very_high")
+
+    # 3. weak trend + weak momentum = NO_TRADE
+    if "trend_regime" in frame.columns and "indicator_setup" in frame.columns:
+        weak_trend_momentum = (frame["trend_regime"] == "SIDEWAYS_MARKET") & (frame["indicator_setup"].str.contains("weak", case=False, na=False))
+        mask &= ~weak_trend_momentum
+
+    # 4. conflicting indicators = NO_TRADE
+    if "timeframe_conflict" in frame.columns:
+        mask &= (frame["timeframe_conflict"] != True)
+        mask &= (frame["timeframe_conflict"] != "True")
+        mask &= (frame["timeframe_conflict"] != "true")
+    if "alignment_score" in frame.columns:
+        mask &= (pd.to_numeric(frame["alignment_score"], errors="coerce").fillna(0) >= 0)
+
     
     is_suppressed_symbol = pd.Series(False, index=frame.index)
     if low_symbols:
@@ -1699,6 +1722,8 @@ def walk_forward_evaluation(
         overall_metrics["win_loss_ratio"] = float("nan")
         overall_metrics["sharpe_ratio"] = float("nan")
         overall_metrics["max_drawdown"] = float("nan")
+        
+    overall_metrics["no_trade_signals_count"] = int(len(overall_tradeable) - overall_metrics["tradeable_count"])
 
     fold_summary = {
         "verified_accuracy": safe_nanmean(m.verified_accuracy for m in fold_metrics),

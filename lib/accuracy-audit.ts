@@ -10,6 +10,9 @@ export interface AuditReport {
   averageConfidenceIncorrect: number;
   calibrationError: number;
   mockExclusionCount: number;
+  noTradeSignalsCount: number;
+  winLossRatio: number;
+  medianError: number;
   badges: {
     dataIntegrity: 'PASS' | 'FAIL' | 'WARNING';
     noLeakage: 'PASS' | 'FAIL' | 'WARNING';
@@ -57,6 +60,9 @@ export function runAccuracyAudit(verifiedPredictions: any[]): AuditReport {
     averageConfidenceIncorrect: 0,
     calibrationError: 0,
     mockExclusionCount: 0,
+    noTradeSignalsCount: 0,
+    winLossRatio: 0,
+    medianError: 0,
     badges: {
       dataIntegrity: 'PASS',
       noLeakage: 'PASS',
@@ -146,6 +152,22 @@ export function runAccuracyAudit(verifiedPredictions: any[]): AuditReport {
   if (tradeableCount > 0) {
     report.tradeableVerified = tradeableCount;
     report.tradeableAccuracy = Number(((tradeableCorrectCount / tradeableCount) * 100).toFixed(2));
+    const winCount = tradeableCorrectCount;
+    const lossCount = tradeableCount - tradeableCorrectCount;
+    report.winLossRatio = lossCount > 0 ? Number((winCount / lossCount).toFixed(2)) : winCount;
+  }
+
+  report.noTradeSignalsCount = validCount - tradeableCount;
+  
+  const errors = validPredictions
+    .map(p => p.error_percentage)
+    .filter(e => typeof e === 'number' && !isNaN(e))
+    .sort((a, b) => a - b);
+  
+  if (errors.length > 0) {
+    report.medianError = errors.length % 2 === 0
+      ? Number(((errors[errors.length / 2 - 1] + errors[errors.length / 2]) / 2).toFixed(2))
+      : Number(errors[Math.floor(errors.length / 2)].toFixed(2));
   }
 
   if (correctCount > 0) report.averageConfidenceCorrect = Number((sumConfCorrect / correctCount).toFixed(2));
