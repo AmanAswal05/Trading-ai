@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase';
 import { calculateIndicators } from '@/lib/indicators';
 import { validateMarketData } from '@/lib/data-quality';
 import { StockData, HistoricalQuote, StockQuote } from '@/types/stock';
+import YahooFinance from 'yahoo-finance2';
+
+const yahooFinance = new YahooFinance();
 
 export function generateMockStockData(ticker: string): StockData {
   const cleanTicker = ticker.toUpperCase();
@@ -96,7 +99,9 @@ async function getCachedStockData(cleanTicker: string, cacheTtlMs: number): Prom
       if (cacheAge < cacheTtlMs) {
         if (cached?.data) {
           const stockData = cached.data as StockData;
-          stockData.source = 'cached';
+          if (stockData.source !== 'mock' && stockData.source !== 'fallback') {
+            stockData.source = 'cached';
+          }
           return stockData;
         }
       }
@@ -145,13 +150,110 @@ async function getExpiredCachedStockData(cleanTicker: string): Promise<StockData
   return null;
 }
 
+const yahooCache = new Map<string, { data: StockData; timestamp: number }>();
+const inFlightRequests = new Map<string, Promise<StockData | null>>();
+
+async function executeYahooFetch(ticker: string, cacheKey: string): Promise<StockData | null> {
+  let yahooTicker = ticker;
+  if (yahooTicker.endsWith('.BSE')) yahooTicker = yahooTicker.replace('.BSE', '.BO');
+  else if (yahooTicker.endsWith('.NSE')) yahooTicker = yahooTicker.replace('.NSE', '.NS');
+
+  try {
+    const period1 = new Date();
+    period1.setFullYear(period1.getFullYear() - 5);
+
+    const chartOptions: any = {
+      period1: period1.toISOString().split('T')[0],
+      interval: '1d',
+    };
+    const chart = (await yahooFinance.chart(yahooTicker, chartOptions)) as any;
+
+    if (!chart || !chart.quotes || chart.quotes.length === 0) {
+      return null;
+    }
+
+    const history: HistoricalQuote[] = chart.quotes
+      .filter((q: any) => q.open !== null && q.high !== null && q.low !== null && q.close !== null && q.volume !== null)
+      .map((q: any) => ({
+        date: q.date.toISOString().split('T')[0],
+        open: Number(q.open!.toFixed(2)),
+        high: Number(q.high!.toFixed(2)),
+        low: Number(q.low!.toFixed(2)),
+        close: Number(q.close!.toFixed(2)),
+        volume: q.volume!,
+      }));
+
+    if (history.length < 50) {
+      return null;
+    }
+
+    const lastQuote = history[history.length - 1];
+    const previousClose = history[history.length - 2]?.close || lastQuote.close;
+    const changePercent = previousClose !== 0 ? ((lastQuote.close - previousClose) / previousClose) * 100 : 0;
+
+    const quote: StockQuote = {
+      price: lastQuote.close,
+      open: lastQuote.open,
+      high: lastQuote.high,
+      low: lastQuote.low,
+      volume: lastQuote.volume,
+      changePercent: Number(changePercent.toFixed(2)),
+      previousClose: Number(previousClose.toFixed(2)),
+    };
+
+    const stockData: StockData = {
+      ticker: ticker,
+      name: chart.meta?.symbol || ticker,
+      exchange: chart.meta?.exchangeName || 'Unknown',
+      currency: chart.meta?.currency || 'USD',
+      quote,
+      history,
+      indicators: calculateIndicators(history),
+      dataQuality: validateMarketData(history, lastQuote.close),
+      source: 'live',
+    };
+
+    yahooCache.set(cacheKey, { data: stockData, timestamp: Date.now() });
+    return stockData;
+  } catch (error) {
+    console.error(`Yahoo Finance fetch failed for ${ticker} (${yahooTicker}):`, error);
+    return null;
+  } finally {
+    inFlightRequests.delete(cacheKey);
+  }
+}
+
+async function fetchYahooStockData(ticker: string): Promise<StockData | null> {
+  const cacheKey = `${ticker}-1y`;
+  const cached = yahooCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < 60000) {
+    return cached.data;
+  }
+
+  if (inFlightRequests.has(cacheKey)) {
+    return inFlightRequests.get(cacheKey)!;
+  }
+
+  const promise = executeYahooFetch(ticker, cacheKey);
+  inFlightRequests.set(cacheKey, promise);
+  return promise;
+}
+
 export async function getStockDataInternal(ticker: string): Promise<StockData> {
   const cleanTicker = ticker.toUpperCase();
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   const cacheTtlMs = 15 * 60 * 1000;
 
   const cached = await getCachedStockData(cleanTicker, cacheTtlMs);
-  if (cached) return cached;
+  if (cached && cached.source !== 'mock' && cached.source !== 'fallback') {
+    return cached;
+  }
+
+  const yahooData = await fetchYahooStockData(cleanTicker);
+  if (yahooData) {
+    await cacheStockData(cleanTicker, yahooData, 'stock data');
+    return yahooData;
+  }
 
   if (apiKey && apiKey !== 'your_alpha_vantage_key') {
     try {

@@ -49,8 +49,16 @@ export function calculateIndicators(history: HistoricalQuote[]): TechnicalIndica
     EMA.calculate({ values: closes, period: Math.min(12, len) }),
     currentPrice
   );
+  const ema20Val = lastVal(
+    EMA.calculate({ values: closes, period: Math.min(20, len) }),
+    currentPrice
+  );
   const ema26Val = lastVal(
     EMA.calculate({ values: closes, period: Math.min(26, len) }),
+    currentPrice
+  );
+  const ema50Val = lastVal(
+    EMA.calculate({ values: closes, period: Math.min(50, len) }),
     currentPrice
   );
 
@@ -107,16 +115,22 @@ export function calculateIndicators(history: HistoricalQuote[]): TechnicalIndica
   const stochVal = lastVal(stochResults, { k: 50, d: 50 });
 
   // Williams %R
-  const williamsVal = lastVal(
-    WilliamsR.calculate({ high: highs, low: lows, close: closes, period: Math.min(14, len) }),
-    -50
-  );
+  const willRResults = len >= 14
+    ? WilliamsR.calculate({
+        high: highs,
+        low: lows,
+        close: closes,
+        period: Math.min(14, len),
+      })
+    : [];
+  const williamsVal = lastVal(willRResults, -50);
 
   // On-Balance Volume (OBV)
-  const obvVal = lastVal(
-    OBV.calculate({ close: closes, volume: volumes }),
-    0
-  );
+  const obvResults = OBV.calculate({
+    close: closes,
+    volume: volumes,
+  });
+  const obvVal = lastVal(obvResults, 0);
 
   return {
     rsi14: Number(rsiVal.toFixed(2)),
@@ -129,7 +143,9 @@ export function calculateIndicators(history: HistoricalQuote[]): TechnicalIndica
     sma50: Number(sma50Val.toFixed(2)),
     sma200: Number(sma200Val.toFixed(2)),
     ema12: Number(ema12Val.toFixed(2)),
+    ema20: Number(ema20Val.toFixed(2)),
     ema26: Number(ema26Val.toFixed(2)),
+    ema50: Number(ema50Val.toFixed(2)),
     bollingerUpper: Number((bbVal.upper || currentPrice).toFixed(2)),
     bollingerMiddle: Number((bbVal.middle || currentPrice).toFixed(2)),
     bollingerLower: Number((bbVal.lower || currentPrice).toFixed(2)),
@@ -161,7 +177,9 @@ export function precomputeAllIndicators(history: HistoricalQuote[]): TechnicalIn
   const sma200Arr = SMA.calculate({ values: closes, period: Math.min(200, len) }) || [];
 
   const ema12Arr = EMA.calculate({ values: closes, period: Math.min(12, len) }) || [];
+  const ema20Arr = EMA.calculate({ values: closes, period: Math.min(20, len) }) || [];
   const ema26Arr = EMA.calculate({ values: closes, period: Math.min(26, len) }) || [];
+  const ema50Arr = EMA.calculate({ values: closes, period: Math.min(50, len) }) || [];
 
   const rsi14Arr = RSI.calculate({ values: closes, period: Math.min(14, len) }) || [];
 
@@ -236,7 +254,9 @@ export function precomputeAllIndicators(history: HistoricalQuote[]): TechnicalIn
     const sma200Val = getValAt(sma200Arr, i, currentPrice);
 
     const ema12Val = getValAt(ema12Arr, i, currentPrice);
+    const ema20Val = getValAt(ema20Arr, i, currentPrice);
     const ema26Val = getValAt(ema26Arr, i, currentPrice);
+    const ema50Val = getValAt(ema50Arr, i, currentPrice);
 
     const rsiVal = getValAt(rsi14Arr, i, 50);
 
@@ -268,7 +288,9 @@ export function precomputeAllIndicators(history: HistoricalQuote[]): TechnicalIn
       sma50: Number(sma50Val.toFixed(2)),
       sma200: Number(sma200Val.toFixed(2)),
       ema12: Number(ema12Val.toFixed(2)),
+      ema20: Number(ema20Val.toFixed(2)),
       ema26: Number(ema26Val.toFixed(2)),
+      ema50: Number(ema50Val.toFixed(2)),
       bollingerUpper: Number((bbVal.upper || currentPrice).toFixed(2)),
       bollingerMiddle: Number((bbVal.middle || currentPrice).toFixed(2)),
       bollingerLower: Number((bbVal.lower || currentPrice).toFixed(2)),

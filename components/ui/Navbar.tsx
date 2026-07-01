@@ -142,6 +142,13 @@ export default function Navbar() {
           </button>
 
           <Link
+            href="/scanner"
+            className="flex items-center justify-center h-10 px-3.5 rounded-xl border border-border-custom bg-bg-card hover:bg-bg-card-hover text-xs font-semibold text-text-secondary hover:text-text-primary transition-theme"
+            title="Market Scanner"
+          >
+            Scanner
+          </Link>
+          <Link
             href="/backtest"
             className="flex items-center justify-center h-10 px-3.5 rounded-xl border border-border-custom bg-bg-card hover:bg-bg-card-hover text-xs font-semibold text-text-secondary hover:text-text-primary transition-theme"
             title="Backtesting Lab"

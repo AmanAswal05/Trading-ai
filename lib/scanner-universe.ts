@@ -1,0 +1,35 @@
+export const SCANNER_UNIVERSE_30 = [
+  "AAPL",
+  "MSFT",
+  "GOOGL",
+  "AMZN",
+  "NVDA",
+  "META",
+  "TSLA",
+  "NFLX",
+  "AMD",
+  "AVGO",
+
+  "JPM",
+  "BAC",
+  "GS",
+  "MS",
+  "V",
+
+  "RELIANCE.BSE",
+  "TCS.BSE",
+  "INFY.BSE",
+  "HDFCBANK.BSE",
+  "ICICIBANK.BSE",
+  "SBIN.BSE",
+  "LT.BSE",
+  "BHARTIARTL.BSE",
+  "ITC.BSE",
+  "HINDUNILVR.BSE",
+
+  "BAJFINANCE.BSE",
+  "MARUTI.BSE",
+  "SUNPHARMA.BSE",
+  "AXISBANK.BSE",
+  "TITAN.BSE"
+];

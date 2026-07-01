@@ -29,6 +29,8 @@ function runBacktest() {
       sma20: record.current_price,
       sma50: record.current_price,
       sma200: record.current_price,
+      ema20: record.current_price,
+      ema50: record.current_price,
       bollingerUpper: record.current_price * 1.05,
       bollingerLower: record.current_price * 0.95,
       bollingerMiddle: record.current_price,

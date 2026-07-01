@@ -21,7 +21,9 @@ export interface TechnicalIndicators {
   sma50: number;
   sma200: number;
   ema12: number;
+  ema20: number;
   ema26: number;
+  ema50: number;
   bollingerUpper: number;
   bollingerMiddle: number;
   bollingerLower: number;
